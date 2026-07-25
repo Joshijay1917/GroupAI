@@ -38,8 +38,6 @@ class MessageService {
             }
         }
 
-        console.log("MessageService SenderUser: ", senderUser, " ReceiverUser: ", receiverUser)
-
         if(!senderUser || !receiverUser) {
             throw new Error("User does not exists!")
         }
