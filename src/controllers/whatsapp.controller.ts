@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import MessageService from "../services/message.service.js";
 import SessionService from "../services/session.service.js";
 import agentService from "../services/agent.service.js";
+import messageService from "../services/message.service.js";
 
 export const webHookController = async (req: Request, res: Response) => {
     const data = await req.body;
@@ -10,8 +11,7 @@ export const webHookController = async (req: Request, res: Response) => {
     const sender = payload.from;
     
     if (!sender) {
-        return res.json({
-            statusCode: 400,
+        return res.status(400).json({
             message: "Senderid not found!"
         })
     }
@@ -28,17 +28,16 @@ export const webHookController = async (req: Request, res: Response) => {
 
         const decisionAIRes = await agentService.decisionAI(message, session, memories)
         if(decisionAIRes && decisionAIRes.reply) {
-
+            const replay = await agentService.replyAI(message, session, memories)
+            await messageService.sendReplay(payload.to, replay)
         }
 
-        return res.json({
-            status: 200,
+        return res.status(200).json({
             message: "Message get successfully!"
         })
     } catch (error: any) {
-        console.error(error)
-        return res.json({
-            status: 500,
+        console.error("Something went wrong! error:", error)
+        return res.status(500).json({
             message: error?.message ? error.message : "Something went wrong!"
         })
     }

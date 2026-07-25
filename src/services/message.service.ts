@@ -21,6 +21,7 @@ class MessageService {
         const sender = payload.from;
         const receiver = payload.to;
         const text = payload.body;
+        console.log("Message send by ", sender, " To the ", receiver, " MSG:", text)
 
         let senderUser = senderIdMapper.get(sender)
         if(!senderUser) {
@@ -32,6 +33,8 @@ class MessageService {
             receiverUser = await User.findOne({ whatsappUserId: receiver })
             receiverIdMapper.set(receiver, receiverUser)
         }
+
+        console.log("MessageService SenderUser: ", senderUser, " ReceiverUser: ", receiverUser)
 
         if(!senderUser || !receiverUser) {
             throw new Error("User does not exists!")
@@ -65,8 +68,13 @@ class MessageService {
                     session: "default"
                 }),
             })
-        } catch (error) {
-            
+
+            if(!res.ok) {
+                throw new Error("Failed to send message!")
+            }
+        } catch (error: any) {
+            console.error(error)
+            throw error
         }
     }
 }
