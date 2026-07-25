@@ -112,6 +112,34 @@ class MessageService {
             throw error
         }
     }
+
+    async startTyping(chatId: string) {
+        await fetch(`${WAHA_API_URL}/api/startTyping`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Api-Key": WAHA_API_KEY || ""
+            },
+            body: JSON.stringify({
+                session: "default",
+                chatId
+            })
+        });
+    }
+
+    async stopTyping(chatId: string) {
+        await fetch(`${WAHA_API_URL}/api/stopTyping`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Api-Key": WAHA_API_KEY || ""
+            },
+            body: JSON.stringify({
+                session: "default",
+                chatId
+            })
+        });
+    }
 }
 
 export default new MessageService()

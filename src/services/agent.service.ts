@@ -113,7 +113,7 @@ class AgentService {
             return memories;
         } catch (error) {
             console.error("Memory Retriver Error: ", error)
-            return null;
+            return [];
         }
     }
 

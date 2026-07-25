@@ -24,18 +24,35 @@ export const webHookController = async (req: Request, res: Response) => {
     try {
         const message = await MessageService.handleUserMessage(payload, data.me.lid)
 
-        const memories = await agentService.memoryAI(message)
-        if(memories && memories.save) {
-            await agentService.saveMemories(message.groupId, memories.memories)
-        }
+        void (async () => {
+            try {
+                const memories = await agentService.memoryAI(message)
+                if(memories && memories.save) {
+                    await agentService.saveMemories(message.groupId, memories.memories)
+                }
+            } catch (error) {
+                console.error("Background memory task failed:", error);
+            }
+        })();
 
-        const session = await SessionService.manage(message)
+        const sessionTask = SessionService.manage(message);
+        const memoriesTask = agentService.MemoryRetriever(message);
+
+        const [session, memories] = await Promise.all([
+            sessionTask,
+            memoriesTask
+        ]);
 
         const decisionAIRes = await agentService.decisionAI(message, session, memories)
         if(decisionAIRes && decisionAIRes.reply) {
-            const replay = await agentService.replyAI(message, session, memories)
-            await messageService.sendReplay(groupId, replay)
-            await messageService.storeAIMessage(payload, data.me.lid, replay)
+            await messageService.startTyping(groupId)
+            try {
+                const replay = await agentService.replyAI(message, session, memories)
+                await messageService.sendReplay(groupId, replay)
+                await messageService.storeAIMessage(payload, data.me.lid, replay)
+            } finally {
+                await messageService.stopTyping(groupId)
+            }
         }
 
         return res.status(200).json({
