@@ -26,7 +26,7 @@ export const webHookController = async (req: Request, res: Response) => {
 
         const memories = await agentService.memoryAI(message)
         if(memories && memories.save) {
-            await agentService.saveMemories(memories.memories)
+            await agentService.saveMemories(message.groupId, memories.memories)
         }
 
         const session = await SessionService.manage(message)

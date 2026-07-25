@@ -5,6 +5,7 @@ import Memories, { type IMemories } from "../models/Memories.js";
 import { type ISession } from "../models/Session.js";
 import { DECISION_AI_SYS_PROP } from "../utils/DecisionAISYSPrompt.js";
 import { REPLAY_AI_SYS_PROP } from "../utils/ReplayAISYSPrompt.js";
+import type { Types } from "mongoose";
 
 const ai = new GoogleGenAI({});
 
@@ -43,20 +44,30 @@ class AgentService {
         }
     }
 
-    async saveMemories(memories: IMemories[]) {
-        console.log("Save Memories:", memories)
-        if (memories.length === 0) {
-            return []
+    async saveMemories(groupId: Types.ObjectId, memories: IMemories[]) {
+        try {
+            console.log("Save Memories:", memories)
+            if (memories.length === 0) {
+                return []
+            }
+    
+            const docs = await Promise.all(
+                memories.map(async (memory) => ({
+                    ...memory,
+                    groupId,
+                    embedding: await AgentService.generateEmbeddings(memory.text)
+                }))
+            );
+    
+            const result = await Memories.insertMany(docs);
+    
+            console.log("Inserted:", result);
+    
+            return result;
+        } catch (error) {
+            console.error("insertMany failed:", error);
+            throw error;
         }
-
-        const docs = await Promise.all(
-            memories.map(async (memory) => ({
-                ...memory,
-                embedding: await AgentService.generateEmbeddings(memory.text)
-            }))
-        );
-
-        return await Memories.insertMany(docs);
     }
 
     static async generateEmbeddings(text: string): Promise<number[]> {
