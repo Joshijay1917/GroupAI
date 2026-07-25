@@ -6,6 +6,7 @@ import messageService from "../services/message.service.js";
 
 export const webHookController = async (req: Request, res: Response) => {
     const data = await req.body;
+    console.log("Webhook hit:", data)
     
     const payload = data.payload || data;
     const sender = payload.from;

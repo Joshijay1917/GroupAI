@@ -26,12 +26,16 @@ class MessageService {
         let senderUser = senderIdMapper.get(sender)
         if(!senderUser) {
             senderUser = await User.findOne({ whatsappUserId: sender })
-            senderIdMapper.set(sender, senderUser)
+            if(senderUser) {
+                senderIdMapper.set(sender, senderUser)
+            }
         }
         let receiverUser = receiverIdMapper.get(receiver)
         if(!receiverUser) {
             receiverUser = await User.findOne({ whatsappUserId: receiver })
-            receiverIdMapper.set(receiver, receiverUser)
+            if(receiverUser) {
+                receiverIdMapper.set(receiver, receiverUser)
+            }
         }
 
         console.log("MessageService SenderUser: ", senderUser, " ReceiverUser: ", receiverUser)
