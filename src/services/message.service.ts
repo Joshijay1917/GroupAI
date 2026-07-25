@@ -16,7 +16,7 @@ const senderIdMapper = new Map()
 const receiverIdMapper = new Map()
 
 class MessageService {
-    async store(payload: StorePayload, receiverId: string) {
+    async handleUserMessage(payload: StorePayload, receiverId: string) {
         const sender = payload.participant;
         const receiver = receiverId;
         const text = payload.body;
@@ -48,6 +48,40 @@ class MessageService {
             receiverId: receiverUser._id,
             text,
             aiGenerated,
+            groupId: senderUser.gropuId
+        })
+
+        return message
+    }
+
+    async storeAIMessage(payload: StorePayload, receiverId: string, text: string) {
+        const sender = payload.participant;
+        const receiver = receiverId;
+
+        let senderUser = senderIdMapper.get(sender)
+        if(!senderUser) {
+            senderUser = await User.findOne({ whatsappUserId: sender })
+            if(senderUser) {
+                senderIdMapper.set(sender, senderUser)
+            }
+        }
+        let receiverUser = receiverIdMapper.get(receiver)
+        if(!receiverUser) {
+            receiverUser = await User.findOne({ whatsappUserId: receiver })
+            if(receiverUser) {
+                receiverIdMapper.set(receiver, receiverUser)
+            }
+        }
+
+        if(!senderUser || !receiverUser) {
+            throw new Error("User does not exists!")
+        }
+
+        const message = await Message.create({
+            senderId: receiverUser._id,
+            receiverId: senderUser._id,
+            text,
+            aiGenerated: true,
             groupId: senderUser.gropuId
         })
 

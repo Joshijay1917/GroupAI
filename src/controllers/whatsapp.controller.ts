@@ -22,7 +22,7 @@ export const webHookController = async (req: Request, res: Response) => {
     }
 
     try {
-        const message = await MessageService.store(payload, data.me.lid)
+        const message = await MessageService.handleUserMessage(payload, data.me.lid)
 
         const memories = await agentService.memoryAI(message)
         if(memories && memories.save) {
@@ -35,6 +35,7 @@ export const webHookController = async (req: Request, res: Response) => {
         if(decisionAIRes && decisionAIRes.reply) {
             const replay = await agentService.replyAI(message, session, memories)
             await messageService.sendReplay(groupId, replay)
+            await messageService.storeAIMessage(payload, data.me.lid, replay)
         }
 
         return res.status(200).json({
