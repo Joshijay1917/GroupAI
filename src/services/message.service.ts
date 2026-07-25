@@ -17,9 +17,9 @@ const senderIdMapper = new Map()
 const receiverIdMapper = new Map()
 
 class MessageService {
-    async store(payload: StorePayload) {
+    async store(payload: StorePayload, receiverId: string) {
         const sender = payload.from;
-        const receiver = payload.to;
+        const receiver = receiverId;
         const text = payload.body;
         console.log("Message send by ", sender, " To the ", receiver, " MSG:", text)
 

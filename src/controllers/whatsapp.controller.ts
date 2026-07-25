@@ -18,7 +18,7 @@ export const webHookController = async (req: Request, res: Response) => {
     }
 
     try {
-        const message = await MessageService.store(payload)
+        const message = await MessageService.store(payload, data.me.lid)
 
         const memories = await agentService.memoryAI(message)
         if(memories && memories.save) {
