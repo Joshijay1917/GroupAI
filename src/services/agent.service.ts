@@ -63,21 +63,22 @@ class AgentService {
         console.log("Generate Embeddings:", text)
         try {
             const response = await ai.models.embedContent({
-                model: 'text-embedding-004',
+                model: 'gemini-embedding-2',
                 contents: text
             })
+            const embedding = response.embeddings?.[0];
 
-            const values = response.embeddings?.values?.();
-            if (values) {
-                console.log("Generate Embeddings Res:", Array.from(values))
-                return Array.from(values) as number[];
+            if (!embedding?.values) {
+                return [];
             }
+
+            console.log("Embedding dimensions:", embedding.values.length);
+
+            return embedding.values;
         } catch (error) {
             console.error("Generate embeddings error: ", error)
             return []
         }
-
-        return [];
     }
 
     async MemoryRetriever(message: IMessage) {

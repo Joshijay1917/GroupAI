@@ -34,7 +34,7 @@ export const webHookController = async (req: Request, res: Response) => {
         const decisionAIRes = await agentService.decisionAI(message, session, memories)
         if(decisionAIRes && decisionAIRes.reply) {
             const replay = await agentService.replyAI(message, session, memories)
-            await messageService.sendReplay(payload.to, replay)
+            await messageService.sendReplay(groupId, replay)
         }
 
         return res.status(200).json({

@@ -54,9 +54,9 @@ class MessageService {
         return message
     }
 
-    async sendReplay(receiver: string, text: string) {
+    async sendReplay(groupId: string, text: string) {
         try {
-            const receiverUser = senderIdMapper.get(receiver)
+            // const receiverUser = senderIdMapper.get(groupId)
             const res = await fetch(`${WAHA_API_URL}/api/sendText`, {
                 method: "POST",
                 headers: {
@@ -64,7 +64,7 @@ class MessageService {
                     "X-Api-Key": process.env.WAHA_API_KEY || ''
                 },
                 body: JSON.stringify({
-                    chatId: receiverUser.whatsappUserId,
+                    chatId: groupId,
                     text: text,
                     session: "default"
                 }),
