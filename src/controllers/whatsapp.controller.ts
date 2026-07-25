@@ -9,11 +9,15 @@ export const webHookController = async (req: Request, res: Response) => {
     console.log("Webhook hit:", data)
     
     const payload = data.payload || data;
-    const sender = payload.from;
+    const groupId = payload.from;
+
+    if(!groupId && !groupId.endsWith("@g.us")) {
+        return;
+    }
     
-    if (!sender) {
+    if (!groupId) {
         return res.status(400).json({
-            message: "Senderid not found!"
+            message: "GroupId not found!"
         })
     }
 
