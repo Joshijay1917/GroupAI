@@ -56,7 +56,7 @@ class AgentService {
             }))
         );
 
-        return Memories.insertMany(docs);
+        return await Memories.insertMany(docs);
     }
 
     static async generateEmbeddings(text: string): Promise<number[]> {
