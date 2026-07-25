@@ -7,7 +7,6 @@ const SESSION_TIMEOUT = 30 * MINUTE;
 
 class SessionService {
     async manage(message: IMessage) {
-        const groups = await Group.find({})
         const session = await Session.findOne({
             groupId: message.groupId,
             status: "active"

@@ -23,31 +23,40 @@ export const webHookController = async (req: Request, res: Response) => {
 
     try {
         const message = await MessageService.handleUserMessage(payload, data.me.lid)
+        const oldMemories = await agentService.MemoryRetriever(message);
 
         void (async () => {
             try {
-                const memories = await agentService.memoryAI(message)
-                if(memories && memories.save) {
-                    await agentService.saveMemories(message.groupId, memories.memories)
+                const memories = await agentService.memoryAI(message, oldMemories)
+                if(memories && memories.actions && memories.actions.length > 0) {
+                    memories.actions.map(async (a: any) => {
+                        switch(a) {
+                            case a.action === "create":
+                                await agentService.saveMemory(groupId, a)
+                                break;
+                            case a.action === "update":
+                                await agentService.updateMemorie(a)
+                                break;
+                            case a.action === "delete":
+                                await agentService.deleteMemory(a)
+                                break;
+                            default:
+                                break;
+                        }
+                    })
                 }
             } catch (error) {
                 console.error("Background memory task failed:", error);
             }
         })();
 
-        const sessionTask = SessionService.manage(message);
-        const memoriesTask = agentService.MemoryRetriever(message);
+        const session = await SessionService.manage(message);
 
-        const [session, memories] = await Promise.all([
-            sessionTask,
-            memoriesTask
-        ]);
-
-        const decisionAIRes = await agentService.decisionAI(message, session, memories)
+        const decisionAIRes = await agentService.decisionAI(message, session, oldMemories)
         if(decisionAIRes && decisionAIRes.reply) {
             await messageService.startTyping(groupId)
             try {
-                const replay = await agentService.replyAI(message, session, memories)
+                const replay = await agentService.replyAI(message, session, oldMemories)
                 await messageService.sendReplay(groupId, replay)
                 await messageService.storeAIMessage(payload, data.me.lid, replay)
             } finally {

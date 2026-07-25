@@ -6,11 +6,14 @@ import { type ISession } from "../models/Session.js";
 import { DECISION_AI_SYS_PROP } from "../utils/DecisionAISYSPrompt.js";
 import { REPLAY_AI_SYS_PROP } from "../utils/ReplayAISYSPrompt.js";
 import type { Types } from "mongoose";
+import type { CreateMemory } from "../types/Memory/create.js";
+import type { UpdateMemory } from "../types/Memory/update.js";
+import type { DeleteMemory } from "../types/Memory/delete.js";
 
 const ai = new GoogleGenAI({});
 
 class AgentService {
-    async memoryAI(message: IMessage) {
+    async memoryAI(message: IMessage, oldMemories: IMemories[]) {
         console.log("MemoryAI: ", message.text)
         try {
             const recentMessages = await Message.find({ groupId: message.groupId }).sort({ createdAt: -1 }).limit(5).lean()
@@ -22,7 +25,8 @@ class AgentService {
                         text: message.text,
                         createdAt: message.createdAt
                     },
-                    recentMessages: recentMessages
+                    recentMessages: recentMessages,
+                    relatedMemories: oldMemories
                 }),
                 config: {
                     systemInstruction: MEMOERY_AI_SYS_PROP,
@@ -44,29 +48,66 @@ class AgentService {
         }
     }
 
-    async saveMemories(groupId: Types.ObjectId, memories: IMemories[]) {
+    async saveMemory(groupId: Types.ObjectId, memory: CreateMemory) {
+        if(memory && memory.action && memory.action !== "create") {
+            return;
+        }
         try {
-            console.log("Save Memories:", memories)
-            if (memories.length === 0) {
-                return []
+            console.log("Save memory:", memory)
+            if (!memory) {
+                return null;
             }
+
+            const result = await Memories.create({
+                ...memory.memory,
+                groupId,
+                embedding: await AgentService.generateEmbeddings(memory.memory.text)
+            })
     
-            const docs = await Promise.all(
-                memories.map(async (memory) => ({
-                    ...memory,
-                    groupId,
-                    embedding: await AgentService.generateEmbeddings(memory.text)
-                }))
-            );
-    
-            const result = await Memories.insertMany(docs);
-    
-            console.log("Inserted:", result);
+            console.log("Save Memory Inserted:", result);
     
             return result;
         } catch (error) {
-            console.error("insertMany failed:", error);
+            console.error("Save Memory failed:", error);
             throw error;
+        }
+    }
+
+    async updateMemorie(memory: UpdateMemory) {
+        if(memory && memory.action && memory.action !== "update") {
+            return;
+        }
+        try {
+            let existingMemory = await Memories.findById(memory.memoryId)
+            if(!existingMemory) {
+                return null;
+            }
+
+            existingMemory.text = memory.changes.text
+            existingMemory.confidence = memory.changes.confidence
+            await existingMemory.save()
+
+            return existingMemory;
+        } catch (error) {
+            console.error("Update Memory Error:", error)
+            return null;
+        }
+    }
+
+    async deleteMemory(memory: DeleteMemory) {
+        if(memory && memory.action && memory.action !== "delete") {
+            return;
+        }
+        try {
+            let result = await Memories.findByIdAndDelete(memory.memoryId)
+            if(!result) {
+                return null;
+            }
+
+            return result;
+        } catch (error) {
+            console.error("Delete Memory Error:", error)
+            return null;
         }
     }
 

@@ -25,11 +25,31 @@ Never store:
 Return ONLY valid JSON.
 
 {
-  "save": true,
-  "memories": [{
-    type: "fact" | "task" | "reminder" | "decision" | "preference",
-    text: string,
-    metadata?: Record<string, any>,
-    confidence: number
-  }, ...]
+  "actions": [
+    {
+      "action": "create",
+      "memory": {
+        type: "fact" | "task" | "reminder" | "decision" | "preference",
+        text: "Rahul will submit the assignment tomorrow.",
+        metadata?: Record<string, any>,
+        confidence: 0.96
+      }
+    },
+    {
+      "action": "delete",
+      "memoryId": "6883d4..."
+    },
+    {
+      "action": "update",
+      "memoryId": "6883d4...",
+      "changes": {
+        "text": "Jay now prefers Vue.",
+        "confidence": 0.98
+      }
+    },
+    {
+      "action": "ignore",
+      "reason": "Small talk."
+    }
+  ]
 }`
