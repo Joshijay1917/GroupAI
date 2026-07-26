@@ -8,6 +8,7 @@ export interface ISession extends Document {
     lastActivityAt: Date;
     messageIds: Types.ObjectId[];
     summary?: string;
+    createdAt: Date;
 }
 
 const sessionSchema = new mongoose.Schema<ISession>({

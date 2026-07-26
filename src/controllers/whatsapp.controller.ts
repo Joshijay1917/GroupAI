@@ -1,8 +1,12 @@
 import type { Request, Response } from "express";
 import MessageService from "../services/message.service.js";
-import SessionService from "../services/session.service.js";
-import agentService from "../services/agent.service.js";
 import messageService from "../services/message.service.js";
+import { ContextBuilder } from "../utils/ContextBuilder.js";
+import AgentService from "../services/agent.service.js";
+import { CacheService } from "../services/cache.service.js";
+import sessionService from "../services/session.service.js";
+
+const cacheService = new CacheService()
 
 export const webHookController = async (req: Request, res: Response) => {
     const data = await req.body;
@@ -23,23 +27,24 @@ export const webHookController = async (req: Request, res: Response) => {
 
     try {
         const message = await MessageService.handleUserMessage(payload, data.me.lid)
-        const oldMemories = await agentService.MemoryRetriever(message);
+        const builder = await ContextBuilder.build(message, cacheService);
+        const agent = new AgentService(builder);
 
         void (async () => {
             try {
-                const memories = await agentService.memoryAI(message, oldMemories)
+                const memories = await agent.memoryAI()
                 if(memories && memories.actions && memories.actions.length > 0) {
                     await Promise.all(
                         memories.actions.map(async (a: any) => {
                         switch(a.action) {
                             case "create":
-                                await agentService.saveMemory(groupId, a)
+                                await agent.saveMemory(groupId, a)
                                 break;
                             case "update":
-                                await agentService.updateMemorie(a)
+                                await agent.updateMemory(a)
                                 break;
                             case "delete":
-                                await agentService.deleteMemory(a)
+                                await agent.deleteMemory(a)
                                 break;
                             default:
                                 break;
@@ -52,13 +57,13 @@ export const webHookController = async (req: Request, res: Response) => {
             }
         })();
 
-        const session = await SessionService.manage(message);
+        await sessionService.manage(message, agent)
 
-        const decisionAIRes = await agentService.decisionAI(message, session, oldMemories)
+        const decisionAIRes = await agent.decisionAI()
         if(decisionAIRes && decisionAIRes.reply) {
             await messageService.startTyping(groupId)
             try {
-                const replay = await agentService.replyAI(message, session, oldMemories)
+                const replay = await agent.replyAI()
                 await messageService.sendReplay(groupId, replay)
                 await messageService.storeAIMessage(payload, data.me.lid, replay)
             } finally {

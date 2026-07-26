@@ -1,33 +1,33 @@
 import Message, { type IMessage } from "../models/Message.js";
 import { GoogleGenAI } from "@google/genai";
 import { MEMOERY_AI_SYS_PROP } from "../utils/MemoryAISYSPrompt.js";
-import Memories, { type IMemories } from "../models/Memories.js";
-import { type ISession } from "../models/Session.js";
+import Memories from "../models/Memories.js";
 import { DECISION_AI_SYS_PROP } from "../utils/DecisionAISYSPrompt.js";
 import { REPLAY_AI_SYS_PROP } from "../utils/ReplayAISYSPrompt.js";
 import type { Types } from "mongoose";
 import type { CreateMemory } from "../types/Memory/create.js";
 import type { UpdateMemory } from "../types/Memory/update.js";
 import type { DeleteMemory } from "../types/Memory/delete.js";
+import { ContextBuilder } from "../utils/ContextBuilder.js";
+import type { ISession } from "../models/Session.js";
 
 const ai = new GoogleGenAI({});
 
 class AgentService {
-    async memoryAI(message: IMessage, oldMemories: IMemories[]) {
-        console.log("MemoryAI: ", message.text)
+    private builder;
+
+    constructor(builder: ContextBuilder) {
+        this.builder = builder
+    }
+
+    async memoryAI() {
+        console.log("Memory AI Started!")
         try {
-            const recentMessages = await Message.find({ groupId: message.groupId }).sort({ createdAt: -1 }).limit(5).lean()
+            // const recentMessages = await Message.find({ groupId: message.groupId }).sort({ createdAt: -1 }).limit(20).lean()
+            const context = this.builder.generateMemoryAI();
             const response = await ai.models.generateContent({
                 model: "gemma-4-31b-it",
-                contents: JSON.stringify({
-                    currentMessage: {
-                        sender: message.senderId,
-                        text: message.text,
-                        createdAt: message.createdAt
-                    },
-                    recentMessages: recentMessages,
-                    relatedMemories: oldMemories
-                }),
+                contents: JSON.stringify(context),
                 config: {
                     systemInstruction: MEMOERY_AI_SYS_PROP,
                     responseMimeType: "application/json"
@@ -74,7 +74,7 @@ class AgentService {
         }
     }
 
-    async updateMemorie(memory: UpdateMemory) {
+    async updateMemory(memory: UpdateMemory) {
         console.log("Update memory init:", memory)
         if(memory.action !== "update") {
             return;
@@ -154,7 +154,7 @@ class AgentService {
         }
     }
 
-    async MemoryRetriever(message: IMessage) {
+    static async MemoryRetriever(message: IMessage) {
         console.log("Memory Retriver:", message)
         try {
             const embedding = await AgentService.generateEmbeddings(message.text)
@@ -192,18 +192,14 @@ class AgentService {
         }
     }
 
-    async decisionAI(message: IMessage, session: ISession, memories: IMemories[]) {
-        console.log("Decision AI:", message.text)
+    async decisionAI() {
+        console.log("Decision AI Started!")
         try {
-            const recentMessages = await Message.find({ groupId: message.groupId }).sort({ createdAt: -1 }).limit(10).lean()
+            // const recentMessages = await Message.find({ groupId: message.groupId }).sort({ createdAt: -1 }).limit(10).lean()
+            const context = this.builder.generateDecisionAI();
             const response = await ai.models.generateContent({
                 model: "gemma-4-31b-it",
-                contents: JSON.stringify({
-                    currentMessage: message.text,
-                    recentMessages,
-                    session,
-                    memories
-                }),
+                contents: JSON.stringify(context),
                 config: {
                     systemInstruction: DECISION_AI_SYS_PROP,
                     responseMimeType: "application/json"
@@ -218,25 +214,14 @@ class AgentService {
         }
     }
 
-    async replyAI(
-        message: IMessage,
-        session: ISession,
-        memories: IMemories[]
-    ): Promise<string> {
-        console.log("Replay AI:", message.text)
+    async replyAI(): Promise<string> {
+        console.log("Replay AI Started!")
         try {
-            const recentMessages = await Message.find({ groupId: message.groupId }).sort({ createdAt: -1 }).limit(10).lean()
+            // const recentMessages = await Message.find({ groupId: message.groupId }).sort({ createdAt: -1 }).limit(20).lean()
+            const context = this.builder.generateReplayAI();
             const response = await ai.models.generateContent({
                 model: "gemma-4-31b-it",
-                contents: JSON.stringify({
-                    currentMessage: {
-                        sender: message.senderId,
-                        text: message.text
-                    },
-                    recentMessages,
-                    session,
-                    memories
-                }),
+                contents: JSON.stringify(context),
                 config: {
                     systemInstruction: REPLAY_AI_SYS_PROP
                 }
@@ -249,6 +234,26 @@ class AgentService {
             return "";
         }
     }
+
+    async summaryAI(session: ISession) {
+        console.log("Summary AI Started!")
+        try {
+            const context = await this.builder.generateSummaryAI(session)
+            const response = await ai.models.generateContent({
+                model: "gemma-4-31b-it",
+                contents: JSON.stringify(context),
+                config: {
+                    systemInstruction: REPLAY_AI_SYS_PROP
+                }
+            })
+            console.log("Summary AI Res:", response.text)
+    
+            return JSON.parse(response.text!);
+        } catch (error) {
+            console.error("Summary AI Error:", error)
+            return null
+        }
+    }
 }
 
-export default new AgentService()
+export default AgentService
