@@ -10,6 +10,7 @@ import type { UpdateMemory } from "../types/Memory/update.js";
 import type { DeleteMemory } from "../types/Memory/delete.js";
 import { ContextBuilder } from "../utils/ContextBuilder.js";
 import type { ISession } from "../models/Session.js";
+import { SUMMARY_AI_SYS_PROP } from "../utils/SummaryAISYSPrompt.js";
 
 const ai = new GoogleGenAI({});
 
@@ -243,7 +244,7 @@ class AgentService {
                 model: "gemma-4-31b-it",
                 contents: JSON.stringify(context),
                 config: {
-                    systemInstruction: REPLAY_AI_SYS_PROP,
+                    systemInstruction: SUMMARY_AI_SYS_PROP,
                     responseMimeType: "application/json"
                 }
             })
