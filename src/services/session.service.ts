@@ -2,12 +2,13 @@ import Group from "../models/Group.js";
 import { type IMessage } from "../models/Message.js"
 import Session from "../models/Session.js"
 import type AgentService from "./agent.service.js";
+import type { CacheService } from "./cache.service.js";
 
 const MINUTE = 60 * 1000;
 const SESSION_TIMEOUT = 30 * MINUTE;
 
 class SessionService {
-    async manage(message: IMessage, agent: AgentService) {
+    async manage(message: IMessage, agent: AgentService, cacheService: CacheService) {
         const session = await Session.findOne({
             groupId: message.groupId,
             status: "active"
@@ -20,6 +21,7 @@ class SessionService {
                 participants: [message.senderId._id],
                 messageIds: [message._id]
             })
+            cacheService.setSessions(message.groupId, [newSession])
             return newSession;
         }
 
@@ -42,6 +44,7 @@ class SessionService {
                 participants: [message.senderId._id],
                 messageIds: [message._id]
             })
+            cacheService.setSessions(message.groupId, [session, newSession])
             return newSession;
         }
 
@@ -52,6 +55,7 @@ class SessionService {
         }
 
         session.lastActivityAt = new Date();
+        cacheService.updateLastSession(message.groupId);
 
         await session.save();
 

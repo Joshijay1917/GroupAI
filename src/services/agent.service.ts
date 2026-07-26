@@ -11,6 +11,7 @@ import type { DeleteMemory } from "../types/Memory/delete.js";
 import { ContextBuilder } from "../utils/ContextBuilder.js";
 import type { ISession } from "../models/Session.js";
 import { SUMMARY_AI_SYS_PROP } from "../utils/SummaryAISYSPrompt.js";
+import type { CacheService } from "./cache.service.js";
 
 const ai = new GoogleGenAI({});
 
@@ -49,7 +50,7 @@ class AgentService {
         }
     }
 
-    async saveMemory(groupId: Types.ObjectId, memory: CreateMemory) {
+    async saveMemory(groupId: Types.ObjectId, memory: CreateMemory, cacheService: CacheService) {
         console.log("Save memory init:", memory)
         if(memory.action !== "create") {
             return;
@@ -67,6 +68,9 @@ class AgentService {
             })
     
             console.log("Save Memory Inserted:", result);
+            if(result) {
+                cacheService.pushMemory(groupId, result)
+            }
     
             return result;
         } catch (error) {
@@ -75,7 +79,7 @@ class AgentService {
         }
     }
 
-    async updateMemory(memory: UpdateMemory) {
+    async updateMemory(groupId: Types.ObjectId, memory: UpdateMemory, cacheService: CacheService) {
         console.log("Update memory init:", memory)
         if(memory.action !== "update") {
             return;
@@ -103,6 +107,8 @@ class AgentService {
 
             await existingMemory.save()
 
+            cacheService.updateMemory(groupId, memory)
+
             console.log("Updated memory res:", existingMemory)
 
             return existingMemory;
@@ -112,7 +118,7 @@ class AgentService {
         }
     }
 
-    async deleteMemory(memory: DeleteMemory) {
+    async deleteMemory(groupId: Types.ObjectId, memory: DeleteMemory, cacheService: CacheService) {
         console.log("Delete memory init:", memory)
         if(memory.action !== "delete") {
             return;
@@ -125,6 +131,7 @@ class AgentService {
             }
 
             console.log("Delete memory res:", result)
+            cacheService.deleteMemory(groupId, memory.memoryId)
 
             return result;
         } catch (error) {

@@ -77,6 +77,11 @@ export class ContextBuilder {
         if(!this.currentMessage) {
             throw new Error("MemoryAIContext: Current Message not found!")
         }
+        console.log("MemoreyAI Context Generation:", {
+            currentMessage: this.currentMessage,
+            recentMessages: this.recentMessages.slice(-MAX_RECENT_MESSAGES).map(m => ({ senderId: m.sender.name, text: m.text })),
+            relatedMemories: this.memories.slice(-MAX_MEMORIES)
+        })
         return {
             currentMessage: this.currentMessage,
             recentMessages: this.recentMessages.slice(-MAX_RECENT_MESSAGES).map(m => ({ senderId: m.sender.name, text: m.text })),
@@ -88,6 +93,12 @@ export class ContextBuilder {
         if(!this.currentMessage || !this.sessions) {
             throw new Error("DecisionAIContext: Current Message not found!")
         }
+        console.log("Decision AI Context:", {
+            currentMessage: this.currentMessage.text,
+            session: this.sessions,
+            recentMessages: this.recentMessages.slice(-MAX_RECENT_MESSAGES).map(m => ({ senderId: m.sender.name, text: m.text })),
+            memories: this.memories.slice(-MAX_MEMORIES)
+        })
         return {
             currentMessage: this.currentMessage.text,
             session: this.sessions,
@@ -100,6 +111,12 @@ export class ContextBuilder {
         if(!this.currentMessage || !this.sessions) {
             throw new Error("ReplayAIContext: Current Message not found!")
         }
+        console.log("Replay AI Context:", {
+            currentMessage: this.currentMessage,
+            session: this.sessions,
+            recentMessages: this.recentMessages.slice(-MAX_RECENT_MESSAGES).map(m => ({ senderId: m.sender.name, text: m.text })),
+            memories: this.memories.slice(-MAX_MEMORIES)
+        })
         return {
             currentMessage: this.currentMessage,
             session: this.sessions,
@@ -119,6 +136,15 @@ export class ContextBuilder {
                 $lte: session.lastActivityAt
             }
         }).sort({ createdAt: 1 });
+        console.log("Summary AI Context:", {
+            session,
+            messages: messages.map(m => ({
+                sender: m.senderId.name,
+                text: m.text,
+                aiGenerated: m.aiGenerated,
+                createdAt: m.createdAt
+            }))
+        })
         return {
             session,
             messages: messages.map(m => ({

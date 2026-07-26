@@ -3,6 +3,7 @@ import type { IMessage } from "../models/Message.js";
 import type { ISession } from "../models/Session.js";
 import type { IMemories } from "../models/Memories.js";
 import type { IUser } from "../models/User.js";
+import type { UpdateMemory } from "../types/Memory/update.js";
 
 interface CurrentMessage {
     sender: Types.ObjectId,
@@ -55,6 +56,7 @@ export class CacheService {
     }
 
     init(message: IMessage, recentMessages: IMessage[], sessions: ISession[], memories: IMemories[]) {
+        console.log("Cache Service Init!")
         const groupId = message.groupId.toString();
         let cacheGroup = this.cache.get(groupId)
         if(!cacheGroup) {
@@ -87,11 +89,14 @@ export class CacheService {
             metadata: m.metadata,
             confidence: m.confidence
         }));
+
+        console.log("Initialized Cache Service!:", cacheGroup)
         
         return cacheGroup;
     }
 
     setCurrentMessage(message: IMessage) {
+        console.log("Cache Service SetCurrMsg:", message)
         const group = this.get(message.groupId.toString());
 
         group.currentMessage = {
@@ -102,6 +107,7 @@ export class CacheService {
     }
 
     pushRecentMessage(message: IMessage) {
+        console.log("Cache Service Push Recent Message:", message)
         const group = this.get(message.groupId.toString());
 
         group.recentMessages.push({
@@ -117,6 +123,7 @@ export class CacheService {
     }
 
     setSessions(groupId: Types.ObjectId, sessions: ISession[]) {
+        console.log("Cache Service Set Session:", sessions)
         const group = this.get(groupId.toString());
 
         group.sessions = sessions
@@ -129,6 +136,16 @@ export class CacheService {
             }));
     }
 
+    updateLastSession(groupId: Types.ObjectId) {
+        console.log("Cache Service UpdateLastSess")
+        const group = this.get(groupId.toString());
+        const lastSession = group.sessions.at(-1);
+
+        if (!lastSession) return;
+
+        lastSession.lastActivityAt = new Date();
+    }
+
     setMemories(groupId: Types.ObjectId, memories: IMemories[]) {
         const group = this.get(groupId.toString());
 
@@ -139,6 +156,41 @@ export class CacheService {
             confidence: m.confidence,
             metadata: m.metadata
         }));
+    }
+
+    pushMemory(groupId: Types.ObjectId, memory: IMemories) {
+        console.log("Cache Service PushMemo:", memory)
+        const group = this.get(groupId.toString());
+
+        group.memories.push({
+            id: memory._id,
+            type: memory.type,
+            text: memory.text,
+            confidence: memory.confidence,
+            metadata: memory.metadata
+        })
+    }
+
+    updateMemory(groupId: Types.ObjectId, memory: UpdateMemory) {
+        console.log("Cache Service Update Memory:", memory)
+        const group = this.get(groupId.toString());
+
+        const currentMemory = group.memories.find(m => m.id.toString() === memory.memoryId.toString())
+        if(currentMemory) {
+            currentMemory.text = memory.changes.text;
+            currentMemory.confidence = memory.changes.confidence;
+            currentMemory.metadata = memory.changes.metadata;
+        }
+
+        return currentMemory;
+    }
+
+    deleteMemory(groupId: Types.ObjectId, memoryId: string) {
+        console.log("Cache Service Delete Memory:", memoryId)
+        if(!memoryId) return;
+        const group = this.get(groupId.toString());
+
+        group.memories = group.memories.filter(m => m.id.toString() !== memoryId.toString())
     }
 
     getGroup(groupId: Types.ObjectId) {

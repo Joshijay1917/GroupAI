@@ -38,13 +38,13 @@ export const webHookController = async (req: Request, res: Response) => {
                         memories.actions.map(async (a: any) => {
                         switch(a.action) {
                             case "create":
-                                await agent.saveMemory(groupId, a)
+                                await agent.saveMemory(groupId, a, cacheService)
                                 break;
                             case "update":
-                                await agent.updateMemory(a)
+                                await agent.updateMemory(groupId, a, cacheService)
                                 break;
                             case "delete":
-                                await agent.deleteMemory(a)
+                                await agent.deleteMemory(groupId, a, cacheService)
                                 break;
                             default:
                                 break;
@@ -57,7 +57,7 @@ export const webHookController = async (req: Request, res: Response) => {
             }
         })();
 
-        await sessionService.manage(message, agent)
+        await sessionService.manage(message, agent, cacheService)
 
         const decisionAIRes = await agent.decisionAI()
         if(decisionAIRes && decisionAIRes.reply) {
