@@ -29,21 +29,23 @@ export const webHookController = async (req: Request, res: Response) => {
             try {
                 const memories = await agentService.memoryAI(message, oldMemories)
                 if(memories && memories.actions && memories.actions.length > 0) {
-                    memories.actions.map(async (a: any) => {
-                        switch(a) {
-                            case a.action === "create":
+                    await Promise.all(
+                        memories.actions.map(async (a: any) => {
+                        switch(a.action) {
+                            case "create":
                                 await agentService.saveMemory(groupId, a)
                                 break;
-                            case a.action === "update":
+                            case "update":
                                 await agentService.updateMemorie(a)
                                 break;
-                            case a.action === "delete":
+                            case "delete":
                                 await agentService.deleteMemory(a)
                                 break;
                             default:
                                 break;
                         }
                     })
+                    )
                 }
             } catch (error) {
                 console.error("Background memory task failed:", error);

@@ -22,6 +22,10 @@ Never store:
 - Casual replies
 - Temporary conversations
 
+If the memory's meaning changes so much that its type would change, do NOT update it. Instead:
+1. Delete (or deactivate) the old memory.
+2. Create a new memory with the correct type.
+
 Return ONLY valid JSON.
 
 {
@@ -29,10 +33,10 @@ Return ONLY valid JSON.
     {
       "action": "create",
       "memory": {
-        type: "fact" | "task" | "reminder" | "decision" | "preference",
-        text: "Rahul will submit the assignment tomorrow.",
-        metadata?: Record<string, any>,
-        confidence: 0.96
+        "type": "fact" | "task" | "reminder" | "decision" | "preference",
+        "text": "Rahul will submit the assignment tomorrow.",
+        "metadata"?: Record<string, any>,
+        "confidence": 0.96
       }
     },
     {
@@ -44,7 +48,8 @@ Return ONLY valid JSON.
       "memoryId": "6883d4...",
       "changes": {
         "text": "Jay now prefers Vue.",
-        "confidence": 0.98
+        "confidence": 0.98,
+        "metadata"?: Record<string, any>,
       }
     },
     {

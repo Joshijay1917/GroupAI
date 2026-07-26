@@ -3,6 +3,8 @@ export type UpdateMemory = {
     "memoryId": string,
     "changes": {
         "text": string,
-        "confidence": number
+        "confidence": number,
+        "metadata"?: Record<string, any>,
+        "embedding"?: number[]
     }
 }

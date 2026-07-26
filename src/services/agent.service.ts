@@ -49,7 +49,8 @@ class AgentService {
     }
 
     async saveMemory(groupId: Types.ObjectId, memory: CreateMemory) {
-        if(memory && memory.action && memory.action !== "create") {
+        console.log("Save memory init:", memory)
+        if(memory.action !== "create") {
             return;
         }
         try {
@@ -74,18 +75,34 @@ class AgentService {
     }
 
     async updateMemorie(memory: UpdateMemory) {
-        if(memory && memory.action && memory.action !== "update") {
+        console.log("Update memory init:", memory)
+        if(memory.action !== "update") {
             return;
         }
         try {
+            console.log("Update memory:", memory)
             let existingMemory = await Memories.findById(memory.memoryId)
             if(!existingMemory) {
                 return null;
             }
 
-            existingMemory.text = memory.changes.text
-            existingMemory.confidence = memory.changes.confidence
+            if(memory.changes.text) {
+                const embeddings = await AgentService.generateEmbeddings(memory.changes.text)
+                existingMemory.text = memory.changes.text
+                existingMemory.embedding = embeddings
+            }
+
+            if(memory.changes.confidence) {
+                existingMemory.confidence = memory.changes.confidence
+            }
+
+            if(memory.changes.metadata) {
+                existingMemory.metadata = memory.changes.metadata
+            }
+
             await existingMemory.save()
+
+            console.log("Updated memory res:", existingMemory)
 
             return existingMemory;
         } catch (error) {
@@ -95,14 +112,18 @@ class AgentService {
     }
 
     async deleteMemory(memory: DeleteMemory) {
-        if(memory && memory.action && memory.action !== "delete") {
+        console.log("Delete memory init:", memory)
+        if(memory.action !== "delete") {
             return;
         }
         try {
+            console.log("Delete memory:", memory)
             let result = await Memories.findByIdAndDelete(memory.memoryId)
             if(!result) {
                 return null;
             }
+
+            console.log("Delete memory res:", result)
 
             return result;
         } catch (error) {
