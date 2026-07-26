@@ -1,4 +1,4 @@
-import User from "../models/User.js";
+import User, { type IUser } from "../models/User.js";
 import Message, { type IMessage } from "../models/Message.js"
 
 const WAHA_API_URL = process.env.WAHA_API_URL || "http://localhost:3001"
@@ -50,6 +50,9 @@ class MessageService {
             aiGenerated,
             groupId: senderUser.gropuId
         })
+
+        message.populate<{ senderId: IUser }>("senderId");
+        await message.save();
 
         return message
     }

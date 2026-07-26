@@ -5,7 +5,7 @@ import type { MemoryCache, SessionCache } from "../../services/cache.service.ts"
 
 export type DescisionAI = {
     currentMessage: string,
-    recentMessages: string[],
+    recentMessages: { senderId: string, text: string }[],
     session: SessionCache[],
     memories: MemoryCache[]
 }

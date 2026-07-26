@@ -243,7 +243,8 @@ class AgentService {
                 model: "gemma-4-31b-it",
                 contents: JSON.stringify(context),
                 config: {
-                    systemInstruction: REPLAY_AI_SYS_PROP
+                    systemInstruction: REPLAY_AI_SYS_PROP,
+                    responseMimeType: "application/json"
                 }
             })
             console.log("Summary AI Res:", response.text)

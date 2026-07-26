@@ -1,9 +1,10 @@
 import mongoose, { Document, model, Model, Types } from "mongoose";
+import type { IUser } from "./User.js";
 
 export interface IMessage extends Document {
     _id: Types.ObjectId;
     groupId: Types.ObjectId;
-    senderId: Types.ObjectId;
+    senderId: IUser;
     receiverId: Types.ObjectId;
     text: string;
     aiGenerated: boolean;

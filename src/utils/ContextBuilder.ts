@@ -10,6 +10,7 @@ import Message from "../models/Message.js"
 import Session from "../models/Session.js"
 import AgentService from "../services/agent.service.js"
 import type { SummaryAI } from "../types/Context/summaryai.js"
+import type { IUser } from "../models/User.js"
 
 const MAX_RECENT_MESSAGES = 50;
 const MAX_MEMORIES = 10;
@@ -32,7 +33,7 @@ interface CurrentMessage {
 }
 
 interface RecentMessage {
-    sender: Types.ObjectId;
+    sender: IUser;
     text: string;
     createdAt: Date;
     aiGenerated: boolean;
@@ -46,7 +47,7 @@ export class ContextBuilder {
 
     private constructor(message: IMessage, cache: GroupCache) {
         this.currentMessage = {
-            sender: message.senderId,
+            sender: message.senderId._id,
             text: message.text,
             createdAt: message.createdAt
         },
@@ -59,7 +60,7 @@ export class ContextBuilder {
         const cache = cacheService.getGroup(message.groupId)
         if(cache.recentMessages.length === 0) {
             const [recentMessages, sessions, memories] = await Promise.all([
-                Message.find({ groupId: message.groupId }).sort({ createdAt: -1 }).limit(MAX_RECENT_MESSAGES).lean(),
+                Message.find({ groupId: message.groupId }).sort({ createdAt: -1 }).limit(MAX_RECENT_MESSAGES).lean().populate<{ senderId: IUser }>("senderId"),
                 Session.find({ groupId: message.groupId }).sort({ createdAt: -1 }).limit(2).lean(),
                 AgentService.MemoryRetriever(message)
             ])
@@ -78,7 +79,7 @@ export class ContextBuilder {
         }
         return {
             currentMessage: this.currentMessage,
-            recentMessages: this.recentMessages.slice(-MAX_RECENT_MESSAGES).map(m => m.text),
+            recentMessages: this.recentMessages.slice(-MAX_RECENT_MESSAGES).map(m => ({ senderId: m.sender.name, text: m.text })),
             relatedMemories: this.memories.slice(-MAX_MEMORIES)
         }
     }
@@ -90,7 +91,7 @@ export class ContextBuilder {
         return {
             currentMessage: this.currentMessage.text,
             session: this.sessions,
-            recentMessages: this.recentMessages.slice(-MAX_RECENT_MESSAGES).map(m => m.text),
+            recentMessages: this.recentMessages.slice(-MAX_RECENT_MESSAGES).map(m => ({ senderId: m.sender.name, text: m.text })),
             memories: this.memories.slice(-MAX_MEMORIES)
         }
     }
@@ -102,7 +103,7 @@ export class ContextBuilder {
         return {
             currentMessage: this.currentMessage,
             session: this.sessions,
-            recentMessages: this.recentMessages.slice(-MAX_RECENT_MESSAGES).map(m => m.text),
+            recentMessages: this.recentMessages.slice(-MAX_RECENT_MESSAGES).map(m => ({ senderId: m.sender.name, text: m.text })),
             memories: this.memories.slice(-MAX_MEMORIES)
         }
     }
@@ -120,7 +121,12 @@ export class ContextBuilder {
         }).sort({ createdAt: 1 });
         return {
             session,
-            messages
+            messages: messages.map(m => ({
+                sender: m.senderId.name,
+                text: m.text,
+                aiGenerated: m.aiGenerated,
+                createdAt: m.createdAt
+            }))
         }
     }
 }

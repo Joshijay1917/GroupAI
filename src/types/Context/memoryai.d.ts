@@ -7,6 +7,6 @@ type MemoryAI = {
         text: string,
         createdAt: Date
     },
-    recentMessages: String[],
+    recentMessages: {senderId: string, text: string}[],
     relatedMemories: MemoryCache[]
 }

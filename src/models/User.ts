@@ -1,6 +1,7 @@
 import mongoose, { Document, model, Model, Types } from "mongoose";
 
 export interface IUser extends Document {
+    _id: Types.ObjectId;
     gropuId: Types.ObjectId;
     whatsappUserId: string;
     name: string;

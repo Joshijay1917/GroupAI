@@ -2,6 +2,7 @@ import type { Types } from "mongoose";
 import type { IMessage } from "../models/Message.js";
 import type { ISession } from "../models/Session.js";
 import type { IMemories } from "../models/Memories.js";
+import type { IUser } from "../models/User.js";
 
 interface CurrentMessage {
     sender: Types.ObjectId,
@@ -10,7 +11,7 @@ interface CurrentMessage {
 }
 
 interface RecentMessage {
-    sender: Types.ObjectId;
+    sender: any;
     text: string;
     createdAt: Date;
     aiGenerated: boolean;
@@ -67,13 +68,13 @@ export class CacheService {
         }
 
         cacheGroup.currentMessage = {
-            sender: message.senderId,
+            sender: message.senderId._id,
             text: message.text,
             createdAt: message.createdAt
         };
 
         cacheGroup.recentMessages = recentMessages.map(m => ({
-            sender: m.senderId,
+            sender: {...m.senderId},
             text: m.text,
             aiGenerated: m.aiGenerated,
             createdAt: m.createdAt
@@ -94,7 +95,7 @@ export class CacheService {
         const group = this.get(message.groupId.toString());
 
         group.currentMessage = {
-            sender: message.senderId,
+            sender: message.senderId._id,
             text: message.text,
             createdAt: message.createdAt
         };

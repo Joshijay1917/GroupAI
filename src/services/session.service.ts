@@ -17,7 +17,7 @@ class SessionService {
             const newSession = await Session.create({
                 groupId: message.groupId,
                 title: "New Conversation",
-                participants: [message.senderId],
+                participants: [message.senderId._id],
                 messageIds: [message._id]
             })
             return newSession;
@@ -39,7 +39,7 @@ class SessionService {
             const newSession = await Session.create({
                 groupId: message.groupId,
                 title: "New Conversation",
-                participants: [message.senderId],
+                participants: [message.senderId._id],
                 messageIds: [message._id]
             })
             return newSession;
@@ -47,8 +47,8 @@ class SessionService {
 
         session.messageIds.push(message._id);
 
-        if (!session.participants.includes(message.senderId)) {
-            session.participants.push(message.senderId);
+        if (!session.participants.includes(message.senderId._id)) {
+            session.participants.push(message.senderId._id);
         }
 
         session.lastActivityAt = new Date();

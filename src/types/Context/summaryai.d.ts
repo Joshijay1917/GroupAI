@@ -3,5 +3,5 @@ import type { ISession } from "../../models/Session.ts"
 
 export type SummaryAI = {
     session: ISession,
-    messages: IMessage[]
+    messages: Partial<IMessage>[]
 }
