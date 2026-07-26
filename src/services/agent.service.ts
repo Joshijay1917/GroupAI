@@ -145,11 +145,24 @@ class AgentService {
                         path: "embedding",
                         queryVector: embedding,
                         numCandidates: 100,
-                        limit: 5
+                        limit: 10,
+                        filter: {
+                            groupId: message.groupId
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        _id: 1,
+                        text: 1,
+                        type: 1,
+                        metadata: 1,
+                        confidence: 1,
+                        score: { $meta: "vectorSearchScore" }
                     }
                 }
             ])
-            console.log("Memory Retriver Res:", message)
+            console.log("Memory Retriver Res:", memories)
 
             return memories;
         } catch (error) {
