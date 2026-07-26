@@ -12,7 +12,7 @@ import AgentService from "../services/agent.service.js"
 import type { SummaryAI } from "../types/Context/summaryai.js"
 import type { IUser } from "../models/User.js"
 
-const MAX_RECENT_MESSAGES = 50;
+const MAX_RECENT_MESSAGES = 15;
 const MAX_MEMORIES = 10;
 
 export interface IContextBuilder {

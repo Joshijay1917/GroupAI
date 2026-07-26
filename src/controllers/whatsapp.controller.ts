@@ -5,6 +5,7 @@ import { ContextBuilder } from "../utils/ContextBuilder.js";
 import AgentService from "../services/agent.service.js";
 import { CacheService } from "../services/cache.service.js";
 import sessionService from "../services/session.service.js";
+import Group from "../models/Group.js";
 
 const cacheService = new CacheService()
 
@@ -38,13 +39,13 @@ export const webHookController = async (req: Request, res: Response) => {
                         memories.actions.map(async (a: any) => {
                         switch(a.action) {
                             case "create":
-                                await agent.saveMemory(groupId, a, cacheService)
+                                await agent.saveMemory(message.groupId, a, cacheService)
                                 break;
                             case "update":
-                                await agent.updateMemory(groupId, a, cacheService)
+                                await agent.updateMemory(message.groupId, a, cacheService)
                                 break;
                             case "delete":
-                                await agent.deleteMemory(groupId, a, cacheService)
+                                await agent.deleteMemory(message.groupId, a, cacheService)
                                 break;
                             default:
                                 break;
