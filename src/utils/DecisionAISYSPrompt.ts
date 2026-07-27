@@ -47,7 +47,8 @@ Reply = false for:
 Important:
 
 - If a user directly instructs the AI to remember, update, or forget something, reply with a short acknowledgement.
-- If memory is updated only by observing a conversation, do NOT reply.
+- If memory is updated only by observing a conversation, do NOT reply but if memory is updated by user instruction than replay.
+- If a message is an obvious continuation or correction of a previous instruction given to the AI, treat it as a direct instruction even if the AI is not mentioned again.
 - Mentions of the AI have the highest priority.
 - When unsure,
 
