@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GroupAI - AI Agent for chats in group</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <nav>
+        <h1>GroupAI</h1>
+    </nav>
+
+    <div class="card-container">
+        <div class="card-container-left">
+            <section class="card">
+                <h3>Live Webhook Requests</h3>
+                <hr />
+                <main>
+                    Waiting for incoming webhook events...
+                </main>
+            </section>
+        </div>
+        <div class="card-container-right">
+            <section class="card">
+                <div class="card-header">
+                    <h3>Users</h3>
+                    <button class="card-button">+ Add User</button>
+                </div>
+                <hr />
+                <main id="user-container">
+
+                </main>
+            </section>
+            <section class="card">
+                <div class="card-header">
+                    <h3>Groups</h3>
+                    <button class="card-button">+ Add Group</button>
+                </div>
+                <hr />
+                <main id="group-container">
+                    
+                </main>
+            </section>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        const userContainer = document.querySelector("#user-container")
+        const groupContainer = document.querySelector("#group-container")
+
+        socket.on("connect", () => {
+            console.log('Connected to socket!')
+        })
+        
+        socket.on('message', (msg) => {
+            console.log("Get Msg From Server:", msg)
+        })
+        
+        async function fetchAllUsers() {
+            try {
+                const res = await fetch('/api/v1/users')
+                const users = await res.json()
+                console.log("Users:", users.data)
+                if(users.data.length > 0) {
+                    for(const user of users.data) {
+                        const newUserCard = document.createElement('div');
+                        newUserCard.className = "user-card";
+                        newUserCard.innerHTML = `
+                            <div class="user-card-bar"></div>
+                                <div class="user-card-info">
+                                    <h4 class="user-card-title">${user.name}</h4>
+                                    <ul class="user-card-data">
+                                        <li>isBot: ${user.isBot}</li>
+                                        <li>- Phone: ${user.phoneNumber}</li>
+                                    </ul>
+                                </div>
+                        `
+        
+                        userContainer.appendChild(newUserCard)
+                    }
+                } else {
+                    userContainer.innerHTML = "No users found after fetch!"
+                }
+            } catch (error) {
+                userContainer.innerHTML = "No users found something went wrong!"
+                console.error(error)
+            }
+        }
+
+        async function fetchAllGroups() {
+            try {
+                const res = await fetch('/api/v1/groups')
+                const groups = await res.json()
+                console.log("Groups:", groups.data)
+                if(groups.data.length > 0) {
+                    for(const group of groups.data) {
+                        const newGroupCard = document.createElement('div');
+                        newGroupCard.className = "group-card";
+                        newGroupCard.innerHTML = `
+                            <div class="group-card-bar"></div>
+                            <div class="group-card-info">
+                                <div class="group-card-header">
+                                    <h4 class="group-card-title">${group.name}</h4>
+                                    <p>${group.members.length} members</p>
+                                </div>
+                                <p class="group-card-desc">
+                                    ${group.description}
+                                </p>
+                            </div>
+                        `
+        
+                        groupContainer.appendChild(newGroupCard)
+                    }
+                } else {
+                    groupContainer.innerHTML = "No groups found after fetch!"
+                }
+            } catch (error) {
+                groupContainer.innerHTML = "No groups found something went wrong!"
+                console.error(error)
+            }
+        }
+
+        fetchAllUsers()
+        fetchAllGroups()
+    </script>
+</body>
+</html>

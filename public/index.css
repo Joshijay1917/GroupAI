@@ -1,0 +1,136 @@
+* {
+    background-color: #f9f9f9;
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    padding: 40px;
+}
+
+nav {
+    padding: 10px 20px;
+}
+
+.card {
+    padding: 10px;
+    margin: 10px;
+    background-color: white;
+    box-shadow: 0 0 2px 0 rgba(135, 134, 134, 0.615);
+    border-radius: 6px;
+}
+
+.card-header {
+    background-color: white;
+    display: flex;
+    justify-content: space-between;
+}
+
+.card-button {
+    border: 1px solid rgb(198, 195, 195);
+    box-shadow: 0 0px 2px 0 rgba(135, 134, 134, 0.615);
+    border-radius: 10px;
+    padding: 5px 10px;
+    margin: 5px;
+    cursor: pointer;
+    transition: transform 0.1s ease; 
+}
+
+.card-button:active {
+    transform: scale(0.95);
+}
+
+.card h3, .card main {
+    background-color: inherit;
+    padding: 10px;
+}
+
+hr {
+    border: none;
+    height: 2px;
+    background-color: #0076ff;
+}
+
+.card-container {
+    display: flex;
+    justify-content: space-around;
+}
+
+.card-container-left {
+    width: 100%;
+}
+
+.card-container-right {
+    width: 70%;
+}
+
+.user-card {
+    padding: 10px;
+    margin: 10px;
+    padding-left: 25px;
+    display: flex;
+    border-radius: 20px;
+    box-shadow: 0 0 3px 0 rgba(135, 134, 134, 0.615);
+    position: relative;
+    overflow: hidden;
+}
+
+.user-card-bar {
+    background-color: #0076ff;
+    height: 100%;
+    width: 5px;
+    position: absolute;
+    left: 2%;
+    top: 0;
+}
+
+.user-card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.user-card-data {
+    display: flex;
+    gap: 10px;
+    list-style: none;
+}
+
+.group-card {
+    padding: 10px;
+    margin: 10px;
+    padding-left: 25px;
+    display: flex;
+    border-radius: 20px;
+    box-shadow: 0 0 3px 0 rgba(135, 134, 134, 0.615);
+    position: relative;
+    overflow: hidden;
+}
+
+.group-card-bar {
+    background-color: #0076ff;
+    height: 100%;
+    width: 5px;
+    position: absolute;
+    left: 2%;
+    top: 0;
+}
+
+.group-card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+.group-card-header {
+    display: flex;
+    justify-content: space-between;
+}
+
+.group-card-desc {
+    width: 70%;
+    text-wrap-mode: wrap;
+    overflow: clip;
+}

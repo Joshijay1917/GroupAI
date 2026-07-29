@@ -26,6 +26,8 @@ export const webHookController = async (req: Request, res: Response) => {
         })
     }
 
+    req.io.emit('message', payload);
+
     try {
         const message = await MessageService.handleUserMessage(payload, data.me.lid)
         const builder = await ContextBuilder.build(message, cacheService);

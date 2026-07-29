@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && xcopy public dist\\public /E /I /Y",
     "start": "node --env-file=.env dist/index.js",
     "dev": "tsc --watch"
   },
@@ -15,9 +15,12 @@
   "packageManager": "pnpm@10.29.3",
   "dependencies": {
     "@google/genai": "2.13.0",
+    "@types/cors": "2.8.19",
     "@types/express": "5.0.6",
+    "cors": "2.8.6",
     "express": "5.2.1",
-    "mongoose": "9.8.0"
+    "mongoose": "9.8.0",
+    "socket.io": "4.8.3"
   },
   "devDependencies": {
     "@types/node": "26.1.1",
