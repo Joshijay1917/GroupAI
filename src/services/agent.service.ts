@@ -191,16 +191,17 @@ class AgentService {
                     }
                 }
             ])
-            console.log("Memory Retriver Res:", memories)
-
+            
             const result = memories
-                .filter(m => m.score > 0.75)
-                .sort((a, b) => {
-                    if (b.score !== a.score) return b.score - a.score;
-                    if (b.confidence !== a.confidence) return b.confidence - a.confidence;
-                    return b.updatedAt.getTime() - a.updatedAt.getTime();
-                })
-                .slice(0, 8);
+            .filter(m => m.score > 0.75)
+            .sort((a, b) => {
+                if (b.score !== a.score) return b.score - a.score;
+                if (b.confidence !== a.confidence) return b.confidence - a.confidence;
+                return b.updatedAt.getTime() - a.updatedAt.getTime();
+            })
+            .slice(0, 8);
+            
+            console.log("Memory Retriver Res:", result)
 
             return result;
         } catch (error) {

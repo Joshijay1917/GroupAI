@@ -41,9 +41,10 @@ interface RecentMessage {
 
 export class ContextBuilder {
     private currentMessage: CurrentMessage;
-    private recentMessages: RecentMessage[];
-    private sessions: SessionCache[];
-    private memories: MemoryCache[];
+    // private recentMessages: RecentMessage[];
+    // private sessions: SessionCache[];
+    // private memories: MemoryCache[];
+    private cache: GroupCache;
 
     private constructor(message: IMessage, cache: GroupCache) {
         this.currentMessage = {
@@ -51,9 +52,7 @@ export class ContextBuilder {
             text: message.text,
             createdAt: message.createdAt
         },
-        this.recentMessages = cache.recentMessages,
-        this.sessions = cache.sessions,
-        this.memories = cache.memories
+        this.cache = cache
     }
 
     public static async build(message: IMessage, cacheService: CacheService): Promise<ContextBuilder> {
@@ -79,54 +78,54 @@ export class ContextBuilder {
         }
         console.log("MemoreyAI Context Generation:", {
             currentMessage: this.currentMessage,
-            recentMessages: this.recentMessages.slice(-MAX_RECENT_MESSAGES).map(m => ({ senderId: m.sender.name, text: m.text })),
-            relatedMemories: this.memories.slice(-MAX_MEMORIES)
+            recentMessages: this.cache.recentMessages.slice(-MAX_RECENT_MESSAGES).map(m => ({ senderId: m.sender.name, text: m.text })),
+            relatedMemories: this.cache.memories.slice(-MAX_MEMORIES)
         })
         return {
             currentMessage: this.currentMessage,
-            recentMessages: this.recentMessages.slice(-MAX_RECENT_MESSAGES).map(m => ({ senderId: m.sender.name, text: m.text })),
-            relatedMemories: this.memories.slice(-MAX_MEMORIES)
+            recentMessages: this.cache.recentMessages.slice(-MAX_RECENT_MESSAGES).map(m => ({ senderId: m.sender.name, text: m.text })),
+            relatedMemories: this.cache.memories.slice(-MAX_MEMORIES)
         }
     }
 
     generateDecisionAI(): DescisionAI {
-        if(!this.currentMessage || !this.sessions) {
+        if(!this.currentMessage || !this.cache.sessions) {
             throw new Error("DecisionAIContext: Current Message not found!")
         }
         console.log("Decision AI Context:", {
             currentMessage: this.currentMessage.text,
-            session: this.sessions,
-            recentMessages: this.recentMessages.slice(-MAX_RECENT_MESSAGES).map(m => ({ senderId: m.sender.name, text: m.text })),
-            memories: this.memories.slice(-MAX_MEMORIES)
+            session: this.cache.sessions,
+            recentMessages: this.cache.recentMessages.slice(-MAX_RECENT_MESSAGES).map(m => ({ senderId: m.sender.name, text: m.text })),
+            memories: this.cache.memories.slice(-MAX_MEMORIES)
         })
         return {
             currentMessage: this.currentMessage.text,
-            session: this.sessions,
-            recentMessages: this.recentMessages.slice(-MAX_RECENT_MESSAGES).map(m => ({ senderId: m.sender.name, text: m.text })),
-            memories: this.memories.slice(-MAX_MEMORIES)
+            session: this.cache.sessions,
+            recentMessages: this.cache.recentMessages.slice(-MAX_RECENT_MESSAGES).map(m => ({ senderId: m.sender.name, text: m.text })),
+            memories: this.cache.memories.slice(-MAX_MEMORIES)
         }
     }
 
     generateReplayAI(): ReplayAI {
-        if(!this.currentMessage || !this.sessions) {
+        if(!this.currentMessage || !this.cache.sessions) {
             throw new Error("ReplayAIContext: Current Message not found!")
         }
         console.log("Replay AI Context:", {
             currentMessage: this.currentMessage,
-            session: this.sessions,
-            recentMessages: this.recentMessages.slice(-MAX_RECENT_MESSAGES).map(m => ({ senderId: m.sender.name, text: m.text })),
-            memories: this.memories.slice(-MAX_MEMORIES)
+            session: this.cache.sessions,
+            recentMessages: this.cache.recentMessages.slice(-MAX_RECENT_MESSAGES).map(m => ({ senderId: m.sender.name, text: m.text })),
+            memories: this.cache.memories.slice(-MAX_MEMORIES)
         })
         return {
             currentMessage: this.currentMessage,
-            session: this.sessions,
-            recentMessages: this.recentMessages.slice(-MAX_RECENT_MESSAGES).map(m => ({ senderId: m.sender.name, text: m.text })),
-            memories: this.memories.slice(-MAX_MEMORIES)
+            session: this.cache.sessions,
+            recentMessages: this.cache.recentMessages.slice(-MAX_RECENT_MESSAGES).map(m => ({ senderId: m.sender.name, text: m.text })),
+            memories: this.cache.memories.slice(-MAX_MEMORIES)
         }
     }
 
     async generateSummaryAI(session: ISession): Promise<SummaryAI> {
-        if(!this.currentMessage || !this.sessions) {
+        if(!this.currentMessage || !this.cache.sessions) {
             throw new Error("SummaryAIContext: Current Message not found!")
         }
         const messages = await Message.find({
