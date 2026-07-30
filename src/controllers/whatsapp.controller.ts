@@ -16,7 +16,7 @@ export const webHookController = async (req: Request, res: Response) => {
     const payload = data.payload || data;
     const groupId = payload.from;
 
-    if(!groupId && !groupId.endsWith("@g.us")) {
+    if(!groupId || !groupId.endsWith("@g.us")) {
         return;
     }
     
@@ -33,12 +33,10 @@ export const webHookController = async (req: Request, res: Response) => {
         const builder = await ContextBuilder.build(message, cacheService);
         const agent = new AgentService(builder);
 
-        void (async () => {
             try {
                 const memories = await agent.memoryAI()
                 if(memories && memories.actions && memories.actions.length > 0) {
-                    await Promise.all(
-                        memories.actions.map(async (a: any) => {
+                    for(const a of memories.actions) {
                         switch(a.action) {
                             case "create":
                                 await agent.saveMemory(message.groupId, a, cacheService)
@@ -53,16 +51,15 @@ export const webHookController = async (req: Request, res: Response) => {
                                 const query = a.query
                                 const result = await AgentService.MemoryRetriever(message.groupId, query ? query : message.text)
                                 cacheService.setMemories(message.groupId, result)
+                                break;
                             default:
                                 break;
                         }
-                    })
-                    )
+                    }
                 }
             } catch (error) {
                 console.error("Background memory task failed:", error);
             }
-        })();
 
         await sessionService.manage(message, agent, cacheService)
 

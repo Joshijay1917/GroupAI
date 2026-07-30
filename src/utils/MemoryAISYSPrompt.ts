@@ -6,15 +6,21 @@ should become long-term memory.
 Store ONLY information that will be useful in the future.
 
 Examples of memories:
-
 - Facts
 - Preferences
 - Decisions
 - Tasks
 - Reminders
 
-Never store:
+Before creating, updating, or deleting a memory, decide whether you need to retrieve existing memories.
 
+Use "read" when:
+- The current message refers to past information.
+- The current message is incomplete without previous memories.
+- You are unsure whether a similar memory already exists.
+- The user asks about something that may have been remembered before.
+
+Never store and use "read" for:
 - Greetings
 - Small talk
 - Emojis
@@ -23,8 +29,11 @@ Never store:
 - Temporary conversations
 
 If the memory's meaning changes so much that its type would change, do NOT update it. Instead:
-1. Delete (or deactivate) the old memory.
+1. Delete the old memory.
 2. Create a new memory with the correct type.
+
+If you need additional memory context, return only a single "read" action.
+Do not combine "read" with "create", "update", "delete", or "ignore".
 
 Return ONLY valid JSON.
 
