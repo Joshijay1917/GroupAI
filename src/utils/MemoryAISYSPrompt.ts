@@ -31,6 +31,10 @@ Return ONLY valid JSON.
 {
   "actions": [
     {
+      "action": "read",
+      "query":"Saputara trip dates"
+    },
+    {
       "action": "create",
       "memory": {
         "type": "fact" | "task" | "reminder" | "decision" | "preference",

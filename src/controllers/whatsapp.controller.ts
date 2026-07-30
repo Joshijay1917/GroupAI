@@ -49,6 +49,10 @@ export const webHookController = async (req: Request, res: Response) => {
                             case "delete":
                                 await agent.deleteMemory(message.groupId, a, cacheService)
                                 break;
+                            case "read":
+                                const query = a.query
+                                const result = await AgentService.MemoryRetriever(message.groupId, query ? query : message.text)
+                                cacheService.setMemories(message.groupId, result)
                             default:
                                 break;
                         }

@@ -62,7 +62,7 @@ export class ContextBuilder {
             const [recentMessages, sessions, memories] = await Promise.all([
                 Message.find({ groupId: message.groupId }).sort({ createdAt: -1 }).limit(MAX_RECENT_MESSAGES).lean().populate<{ senderId: IUser }>("senderId"),
                 Session.find({ groupId: message.groupId }).sort({ createdAt: -1 }).limit(2).lean(),
-                AgentService.MemoryRetriever(message)
+                AgentService.MemoryRetriever(message.groupId, message.text)
             ])
 
             const cache = cacheService.init(message, recentMessages, sessions, memories)

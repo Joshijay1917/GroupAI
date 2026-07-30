@@ -51,6 +51,7 @@
 
         const userContainer = document.querySelector("#user-container")
         const groupContainer = document.querySelector("#group-container")
+        const webhookContainer = document.querySelector(".card-container-left main");
 
         socket.on("connect", () => {
             console.log('Connected to socket!')
@@ -58,6 +59,57 @@
         
         socket.on('message', (msg) => {
             console.log("Get Msg From Server:", msg)
+
+            if(webhookContainer.innerHTML.includes("Waiting for incoming")) {
+                webhookContainer.innerHTML = "";
+            }
+
+            const card = document.createElement("div");
+            card.className = "webhook-card"
+
+            const isGroup = msg.from.endsWith("@g.us");
+            const sender = msg._data?.pushName || msg.participant || "Unknown";
+
+            card.innerHTML = `
+            <div class="webhook-top">
+            <span class="badge ${isGroup ? "group" : "user"}">
+                ${isGroup ? "GROUP" : "USER"}
+            </span>
+
+            <span class="time">
+                ${new Date(msg.timestamp * 1000).toLocaleTimeString()}
+            </span>
+        </div>
+
+        <h4>${sender}</h4>
+
+        <p class="message">
+            ${msg.body || "<i>Media Message</i>"}
+        </p>
+
+        <div class="webhook-info">
+            <small><b>From:</b> ${msg.from}</small>
+            <small><b>Participant:</b> ${msg.participant ?? "-"}</small>
+            <small><b>Message Id:</b> ${msg.id}</small>
+        </div>
+
+        <div class="webhook-actions">
+            ${
+                isGroup
+                ? `<button class="card-button add-group" data-id="${msg.from}">
+                        + Add Group
+                   </button>`
+                : `<button class="card-button add-user" data-id="${msg.from}">
+                        + Add User
+                   </button>`
+            }
+        </div>`
+
+        webhookContainer.prepend(card);
+
+        while(webhookContainer.children.length > 25) {
+            webhookContainer.removeChild(webhookContainer.lastChild)
+        }
         })
         
         async function fetchAllUsers() {

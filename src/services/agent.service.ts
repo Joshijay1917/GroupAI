@@ -162,10 +162,10 @@ class AgentService {
         }
     }
 
-    static async MemoryRetriever(message: IMessage) {
+    static async MemoryRetriever(groupId: Types.ObjectId, message: string) {
         console.log("Memory Retriver:", message)
         try {
-            const embedding = await AgentService.generateEmbeddings(message.text)
+            const embedding = await AgentService.generateEmbeddings(message)
 
             const memories = await Memories.aggregate([
                 {
@@ -176,7 +176,7 @@ class AgentService {
                         numCandidates: 100,
                         limit: 10,
                         filter: {
-                            groupId: message.groupId
+                            groupId: groupId
                         }
                     }
                 },
@@ -193,7 +193,16 @@ class AgentService {
             ])
             console.log("Memory Retriver Res:", memories)
 
-            return memories;
+            const result = memories
+                .filter(m => m.score > 0.75)
+                .sort((a, b) => {
+                    if (b.score !== a.score) return b.score - a.score;
+                    if (b.confidence !== a.confidence) return b.confidence - a.confidence;
+                    return b.updatedAt.getTime() - a.updatedAt.getTime();
+                })
+                .slice(0, 8);
+
+            return result;
         } catch (error) {
             console.error("Memory Retriver Error: ", error)
             return [];

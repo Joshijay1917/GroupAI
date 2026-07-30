@@ -134,3 +134,63 @@ hr {
     text-wrap-mode: wrap;
     overflow: clip;
 }
+
+.webhook-card{
+    background:#181818;
+    border:1px solid #2d2d2d;
+    border-radius:10px;
+    padding:14px;
+    margin-bottom:14px;
+}
+
+.webhook-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:10px;
+}
+
+.badge{
+    font-size:11px;
+    padding:4px 10px;
+    border-radius:20px;
+    font-weight:bold;
+}
+
+.badge.group{
+    background:#0d6efd;
+    color:white;
+}
+
+.badge.user{
+    background:#198754;
+    color:white;
+}
+
+.time{
+    color:#999;
+    font-size:12px;
+}
+
+.webhook-card h4{
+    margin:0;
+}
+
+.message{
+    margin:10px 0;
+    font-size:15px;
+}
+
+.webhook-info{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    color:#999;
+    margin-bottom:12px;
+    word-break:break-all;
+}
+
+.webhook-actions{
+    display:flex;
+    gap:10px;
+}
