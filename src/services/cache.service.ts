@@ -34,7 +34,6 @@ export interface MemoryCache {
 }
 
 export interface GroupCache {
-    currentMessage?: CurrentMessage,
     recentMessages: RecentMessage[];
     sessions: SessionCache[];
     memories: MemoryCache[];
@@ -55,9 +54,9 @@ export class CacheService {
         return this.cache.get(groupId)!;
     }
 
-    init(message: IMessage, recentMessages: IMessage[], sessions: ISession[], memories: IMemories[]) {
+    init(currentGroupId: Types.ObjectId, recentMessages: IMessage[], sessions: ISession[], memories: IMemories[]) {
         console.log("Cache Service Init!")
-        const groupId = message.groupId.toString();
+        const groupId = currentGroupId.toString()
         let cacheGroup = this.cache.get(groupId)
         if(!cacheGroup) {
             cacheGroup = {
@@ -68,12 +67,6 @@ export class CacheService {
 
             this.cache.set(groupId, cacheGroup)
         }
-
-        cacheGroup.currentMessage = {
-            sender: message.senderId._id,
-            text: message.text,
-            createdAt: message.createdAt
-        };
 
         cacheGroup.recentMessages = recentMessages.map(m => ({
             sender: {...m.senderId},
@@ -93,17 +86,6 @@ export class CacheService {
         console.log("Initialized Cache Service!:", cacheGroup)
         
         return cacheGroup;
-    }
-
-    setCurrentMessage(message: IMessage) {
-        console.log("Cache Service SetCurrMsg:", message)
-        const group = this.get(message.groupId.toString());
-
-        group.currentMessage = {
-            sender: message.senderId._id,
-            text: message.text,
-            createdAt: message.createdAt
-        };
     }
 
     pushRecentMessage(message: IMessage) {

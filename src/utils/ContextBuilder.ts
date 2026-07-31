@@ -42,33 +42,35 @@ interface RecentMessage {
 }
 
 export class ContextBuilder {
-    private currentMessage: CurrentMessage;
+    private currentMessage: CurrentMessage | null = null;
     private cache: GroupCache;
 
-    private constructor(message: IMessage, cache: GroupCache) {
-        this.currentMessage = {
-            sender: message.senderId._id,
-            text: message.text,
-            createdAt: message.createdAt
-        },
+    private constructor(cache: GroupCache) {
         this.cache = cache
     }
 
-    public static async build(message: IMessage, cacheService: CacheService): Promise<ContextBuilder> {
-        const cache = cacheService.getGroup(message.groupId)
+    public static async build(groupId: Types.ObjectId, text: string, cacheService: CacheService): Promise<ContextBuilder> {
+        const cache = cacheService.getGroup(groupId)
         if(cache.recentMessages.length === 0) {
             const [recentMessages, sessions, memories] = await Promise.all([
-                Message.find({ groupId: message.groupId }).sort({ createdAt: -1 }).limit(MAX_RECENT_MESSAGES).lean().populate<{ senderId: IUser }>("senderId"),
-                Session.find({ groupId: message.groupId }).sort({ createdAt: -1 }).limit(2).lean(),
-                AgentService.MemoryRetriever(message.groupId, message.text)
+                Message.find({ groupId: groupId }).sort({ createdAt: -1 }).limit(MAX_RECENT_MESSAGES).lean().populate<{ senderId: IUser }>("senderId"),
+                Session.find({ groupId: groupId }).sort({ createdAt: -1 }).limit(2).lean(),
+                AgentService.MemoryRetriever(groupId, text)
             ])
 
-            const cache = cacheService.init(message, recentMessages, sessions, memories)
+            const cache = cacheService.init(groupId, recentMessages, sessions, memories)
 
-            return new ContextBuilder(message, cache);
+            return new ContextBuilder(cache);
         }
-        cacheService.pushRecentMessage(message)
-        return new ContextBuilder(message, cache);
+        return new ContextBuilder(cache);
+    }
+
+    setCurrentMessage(message: IMessage) {
+        this.currentMessage = {
+            sender: message._id,
+            text: message.text,
+            createdAt: message.createdAt
+        }
     }
 
     generateMemoryAI(): MemoryAI {

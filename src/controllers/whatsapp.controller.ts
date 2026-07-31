@@ -1,14 +1,16 @@
 import type { Request, Response } from "express";
-import MessageService from "../services/message.service.js";
-import messageService from "../services/message.service.js";
 import { ContextBuilder } from "../utils/ContextBuilder.js";
 import AgentService from "../services/agent.service.js";
 import { CacheService } from "../services/cache.service.js";
 import sessionService from "../services/session.service.js";
 import Group from "../models/Group.js";
 import { ReminderService } from "../services/reminder.service.js";
+import { MessageService } from "../services/message.service.js";
 
 const cacheService = new CacheService()
+const messageService = new MessageService(cacheService)
+const reminderService = new ReminderService(cacheService)
+reminderService.start()
 
 export const webHookController = async (req: Request, res: Response) => {
     const data = await req.body;
@@ -30,11 +32,11 @@ export const webHookController = async (req: Request, res: Response) => {
     req.io.emit('message', payload);
 
     try {
-        const message = await MessageService.handleUserMessage(payload, data.me.lid)
-        const builder = await ContextBuilder.build(message, cacheService);
+        const message = await messageService.handleUserMessage(payload, data.me.lid);
+        cacheService.pushRecentMessage(message)
+        const builder = await ContextBuilder.build(message.groupId, message.text, cacheService);
+        builder.setCurrentMessage(message)
         const agent = new AgentService(builder);
-        const reminderService = new ReminderService(cacheService, agent, payload, data.me.lid)
-        reminderService.start()
 
             try {
                 const memories = await agent.memoryAI()
@@ -72,7 +74,7 @@ export const webHookController = async (req: Request, res: Response) => {
             try {
                 const replay = await agent.replyAI("message")
                 await messageService.sendReplay(groupId, replay)
-                await messageService.storeAIMessage(payload, data.me.lid, replay, cacheService)
+                await messageService.storeAIMessage(message.groupId, replay)
             } finally {
                 await messageService.stopTyping(groupId)
             }
