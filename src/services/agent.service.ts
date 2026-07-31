@@ -12,6 +12,7 @@ import { ContextBuilder } from "../utils/ContextBuilder.js";
 import type { ISession } from "../models/Session.js";
 import { SUMMARY_AI_SYS_PROP } from "../utils/SummaryAISYSPrompt.js";
 import type { CacheService } from "./cache.service.js";
+import Reminder, { type IReminder } from "../models/Reminder.js";
 
 const ai = new GoogleGenAI({});
 
@@ -66,10 +67,21 @@ class AgentService {
                 groupId,
                 embedding: await AgentService.generateEmbeddings(memory.memory.text)
             })
-    
+
             console.log("Save Memory Inserted:", result);
             if(result) {
                 cacheService.pushMemory(groupId, result)
+                if(memory.memory.type === "reminder" && memory.memory.metadata) {
+                    try {
+                        await Reminder.create({
+                            groupId: groupId,
+                            memoryId: result._id,
+                            remindAt: memory.memory.metadata.remindAt
+                        })
+                    } catch (error) {
+                        console.error("Reminder creation failed:", error);
+                    }
+                }
             }
     
             return result;
@@ -232,11 +244,16 @@ class AgentService {
         }
     }
 
-    async replyAI(): Promise<string> {
+    async replyAI(type: "message" | "reminder", reminder?: IReminder): Promise<string> {
         console.log("Replay AI Started!")
         try {
             // const recentMessages = await Message.find({ groupId: message.groupId }).sort({ createdAt: -1 }).limit(20).lean()
-            const context = this.builder.generateReplayAI();
+            let context = null;
+            if(type === "reminder" && reminder) {
+                context = this.builder.generateReplayAI(reminder)
+            } else {
+                context = this.builder.generateReplayAI()
+            }
             const response = await ai.models.generateContent({
                 model: "gemma-4-31b-it",
                 contents: JSON.stringify(context),

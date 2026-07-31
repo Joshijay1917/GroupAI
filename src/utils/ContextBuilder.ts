@@ -4,13 +4,15 @@ import type { ISession } from "../models/Session.js"
 import type { IMemories } from "../models/Memories.js"
 import type { MemoryAI } from "../types/Context/memoryai.js"
 import type { DescisionAI } from "../types/Context/decisionai.js"
-import type { ReplayAI } from "../types/Context/replayai.js"
+import type { ReplayAI, ReplayAIRemider } from "../types/Context/replayai.js"
 import { CacheService, type GroupCache, type MemoryCache, type SessionCache } from "../services/cache.service.js"
 import Message from "../models/Message.js"
 import Session from "../models/Session.js"
 import AgentService from "../services/agent.service.js"
 import type { SummaryAI } from "../types/Context/summaryai.js"
 import type { IUser } from "../models/User.js"
+import type { IReminder } from "../models/Reminder.js"
+import mongoose from "mongoose"
 
 const MAX_RECENT_MESSAGES = 15;
 const MAX_MEMORIES = 10;
@@ -41,9 +43,6 @@ interface RecentMessage {
 
 export class ContextBuilder {
     private currentMessage: CurrentMessage;
-    // private recentMessages: RecentMessage[];
-    // private sessions: SessionCache[];
-    // private memories: MemoryCache[];
     private cache: GroupCache;
 
     private constructor(message: IMessage, cache: GroupCache) {
@@ -106,7 +105,10 @@ export class ContextBuilder {
         }
     }
 
-    generateReplayAI(): ReplayAI {
+    generateReplayAI(): ReplayAI;
+    generateReplayAI(reminder: IReminder): ReplayAIRemider;
+
+    generateReplayAI(reminder?: IReminder): any {
         if(!this.currentMessage || !this.cache.sessions) {
             throw new Error("ReplayAIContext: Current Message not found!")
         }
@@ -116,11 +118,33 @@ export class ContextBuilder {
             recentMessages: this.cache.recentMessages.slice(-MAX_RECENT_MESSAGES).map(m => ({ senderId: m.sender.name, text: m.text })),
             memories: this.cache.memories.slice(-MAX_MEMORIES)
         })
+        const recentMessagesMapped = this.cache.recentMessages.slice(-MAX_RECENT_MESSAGES).map(m => ({ senderId: m.sender.name, text: m.text }));
+        const memoriesSliced = this.cache.memories.slice(-MAX_MEMORIES);
+
+        if(reminder) {
+            if (reminder.memoryId instanceof mongoose.Types.ObjectId) {
+                return {
+                    reminder: reminder,
+                    session: this.cache.sessions,
+                    recentMessages: recentMessagesMapped,
+                    memories: memoriesSliced
+                };
+            }
+            return {
+                reminder: {
+                    "text": reminder.memoryId.text
+                },
+                session: this.cache.sessions,
+                recentMessages: recentMessagesMapped,
+                memories: memoriesSliced
+            }
+        }
+
         return {
             currentMessage: this.currentMessage,
             session: this.cache.sessions,
-            recentMessages: this.cache.recentMessages.slice(-MAX_RECENT_MESSAGES).map(m => ({ senderId: m.sender.name, text: m.text })),
-            memories: this.cache.memories.slice(-MAX_MEMORIES)
+            recentMessages: recentMessagesMapped,
+            memories: memoriesSliced
         }
     }
 

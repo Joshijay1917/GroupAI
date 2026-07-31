@@ -1,5 +1,6 @@
 import User, { type IUser } from "../models/User.js";
 import Message, { type IMessage } from "../models/Message.js"
+import type { CacheService } from "./cache.service.js";
 
 const WAHA_API_URL = process.env.WAHA_API_URL || "http://localhost:3001"
 const WAHA_API_KEY = process.env.WAHA_API_KEY
@@ -57,7 +58,7 @@ class MessageService {
         return message
     }
 
-    async storeAIMessage(payload: StorePayload, receiverId: string, text: string) {
+    async storeAIMessage(payload: StorePayload, receiverId: string, text: string, cacheService: CacheService) {
         const sender = payload.participant;
         const receiver = receiverId;
 
@@ -87,6 +88,10 @@ class MessageService {
             aiGenerated: true,
             groupId: senderUser.gropuId
         })
+
+        if(message) {
+            cacheService.pushRecentMessage(message)
+        }
 
         return message
     }

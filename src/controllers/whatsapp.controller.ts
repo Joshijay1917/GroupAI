@@ -6,6 +6,7 @@ import AgentService from "../services/agent.service.js";
 import { CacheService } from "../services/cache.service.js";
 import sessionService from "../services/session.service.js";
 import Group from "../models/Group.js";
+import { ReminderService } from "../services/reminder.service.js";
 
 const cacheService = new CacheService()
 
@@ -32,6 +33,7 @@ export const webHookController = async (req: Request, res: Response) => {
         const message = await MessageService.handleUserMessage(payload, data.me.lid)
         const builder = await ContextBuilder.build(message, cacheService);
         const agent = new AgentService(builder);
+        const reminderService = new ReminderService(cacheService, agent, payload, data.me.lid)
 
             try {
                 const memories = await agent.memoryAI()
@@ -67,9 +69,9 @@ export const webHookController = async (req: Request, res: Response) => {
         if(decisionAIRes && decisionAIRes.reply) {
             await messageService.startTyping(groupId)
             try {
-                const replay = await agent.replyAI()
+                const replay = await agent.replyAI("message")
                 await messageService.sendReplay(groupId, replay)
-                await messageService.storeAIMessage(payload, data.me.lid, replay)
+                await messageService.storeAIMessage(payload, data.me.lid, replay, cacheService)
             } finally {
                 await messageService.stopTyping(groupId)
             }

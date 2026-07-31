@@ -12,3 +12,12 @@ export type ReplayAI = {
     session: SessionCache[],
     memories: MemoryCache[]
 }
+
+export type ReplayAIRemider = {
+    reminder: {
+        text: string
+    },
+    recentMessages: {senderId: string, text: string}[],
+    session: SessionCache[],
+    memories: MemoryCache[]
+}

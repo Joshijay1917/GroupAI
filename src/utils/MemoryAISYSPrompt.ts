@@ -70,4 +70,13 @@ Return ONLY valid JSON.
       "reason": "Small talk."
     }
   ]
+}
+
+If the memory type is "reminder", include reminder details in metadata.
+
+Reminder metadata:
+{
+  "remindAt": "ISO-8601 datetime",
+  "repeat": "none" | "daily" | "weekly" | "monthly",
+  "timezone": "Asia/Kolkata"
 }`
