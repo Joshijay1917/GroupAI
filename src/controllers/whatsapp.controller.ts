@@ -34,6 +34,7 @@ export const webHookController = async (req: Request, res: Response) => {
         const builder = await ContextBuilder.build(message, cacheService);
         const agent = new AgentService(builder);
         const reminderService = new ReminderService(cacheService, agent, payload, data.me.lid)
+        reminderService.start()
 
             try {
                 const memories = await agent.memoryAI()
