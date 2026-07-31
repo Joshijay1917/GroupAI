@@ -27,10 +27,12 @@ export class ReminderService {
     }
 
     private async tick() {
+        console.log("Reminder service tick!")
         const reminders = await Reminder.find({
             status: "pending",
             remindAt: { $lte: new Date() }
         });
+        console.log("Reminder service res:", reminders)
 
         if(reminders && reminders.length > 0) {
             for(const reminder of reminders) {
