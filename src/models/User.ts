@@ -2,7 +2,7 @@ import mongoose, { Document, model, Model, Types } from "mongoose";
 
 export interface IUser extends Document {
     _id: Types.ObjectId;
-    gropuId: Types.ObjectId;
+    groupId: Types.ObjectId;
     whatsappUserId: string;
     name: string;
     phoneNumber?: string;
@@ -10,7 +10,7 @@ export interface IUser extends Document {
 }
 
 const userSchema = new mongoose.Schema<IUser>({
-    gropuId: {
+    groupId: {
         type: mongoose.Types.ObjectId,
         ref: 'Group'
     },

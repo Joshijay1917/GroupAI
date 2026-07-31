@@ -111,15 +111,9 @@ export class ContextBuilder {
     generateReplayAI(reminder: IReminder): ReplayAIRemider;
 
     generateReplayAI(reminder?: IReminder): any {
-        if(!this.currentMessage || !this.cache.sessions) {
-            throw new Error("ReplayAIContext: Current Message not found!")
+        if(!this.cache.sessions) {
+            throw new Error("ReplayAIContext: Sessions not found!")
         }
-        console.log("Replay AI Context:", {
-            currentMessage: this.currentMessage,
-            session: this.cache.sessions,
-            recentMessages: this.cache.recentMessages.slice(-MAX_RECENT_MESSAGES).map(m => ({ senderId: m.sender.name, text: m.text })),
-            memories: this.cache.memories.slice(-MAX_MEMORIES)
-        })
         const recentMessagesMapped = this.cache.recentMessages.slice(-MAX_RECENT_MESSAGES).map(m => ({ senderId: m.sender.name, text: m.text }));
         const memoriesSliced = this.cache.memories.slice(-MAX_MEMORIES);
 
@@ -141,6 +135,16 @@ export class ContextBuilder {
                 memories: memoriesSliced
             }
         }
+
+        if(!this.currentMessage) {
+            throw new Error("ReplayAIContext: Current Message not found!")
+        }
+        console.log("Replay AI Context:", {
+            currentMessage: this.currentMessage,
+            session: this.cache.sessions,
+            recentMessages: this.cache.recentMessages.slice(-MAX_RECENT_MESSAGES).map(m => ({ senderId: m.sender.name, text: m.text })),
+            memories: this.cache.memories.slice(-MAX_MEMORIES)
+        })
 
         return {
             currentMessage: this.currentMessage,
