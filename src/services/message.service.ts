@@ -93,7 +93,7 @@ export class MessageService {
 
     async storeAIMessage(groupId: Types.ObjectId, text: string) {
         const bot = await User.findOne({
-            gropuId: groupId.toString(),
+            groupId: groupId.toString(),
             isBot: true
         })
 
