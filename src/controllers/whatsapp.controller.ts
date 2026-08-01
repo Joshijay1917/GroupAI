@@ -37,8 +37,10 @@ export const webHookController = async (req: Request, res: Response) => {
         const builder = await ContextBuilder.build(message.groupId, message.text, cacheService);
         builder.setCurrentMessage(message)
         const agent = new AgentService(builder);
+        let hasRead = false;
 
-            try {
+        try {
+            while(true) {
                 const memories = await agent.memoryAI()
                 if(memories && memories.actions && memories.actions.length > 0) {
                     for(const a of memories.actions) {
@@ -53,18 +55,25 @@ export const webHookController = async (req: Request, res: Response) => {
                                 await agent.deleteMemory(message.groupId, a, cacheService)
                                 break;
                             case "read":
+                                if(hasRead) {
+                                    throw new Error("MemoryAI requested read twice.")
+                                }
                                 const query = a.query
                                 const result = await AgentService.MemoryRetriever(message.groupId, query ? query : message.text)
                                 cacheService.setMemories(message.groupId, result)
+                                hasRead = true;
                                 break;
                             default:
                                 break;
                         }
                     }
                 }
-            } catch (error) {
-                console.error("Background memory task failed:", error);
             }
+        } catch (error) {
+            console.error("Background memory task failed:", error);
+        }
+
+        start:
 
         await sessionService.manage(message, agent, cacheService)
 

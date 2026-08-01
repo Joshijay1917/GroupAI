@@ -13,6 +13,8 @@ Examples of memories:
 - Reminders
 
 Before creating, updating, or deleting a memory, decide whether you need to retrieve existing memories.
+Use "read" whenever additional memory is required to correctly understand the current message.
+You cannot use more than one "read" action at a time. If you need to read more, return only a single "read" action and wait for the next message.
 
 Use "read" when:
 - The current message refers to past information.
@@ -76,7 +78,7 @@ If the memory type is "reminder", include reminder details in metadata.
 
 Reminder metadata:
 {
-  "remindAt": "ISO-8601 datetime",
+  "remindAt": "ISO-8601 UTC datetime",
   "repeat": "none" | "daily" | "weekly" | "monthly",
   "timezone": "Asia/Kolkata"
 }`
