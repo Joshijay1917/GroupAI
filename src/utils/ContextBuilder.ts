@@ -117,23 +117,27 @@ export class ContextBuilder {
         const recentMessagesMapped = this.cache.recentMessages.slice(-MAX_RECENT_MESSAGES).map(m => ({ senderId: m.sender.name, text: m.text }));
         const memoriesSliced = this.cache.memories.slice(-MAX_MEMORIES);
 
+        const context: any = {
+            session: this.cache.sessions,
+            recentMessages: recentMessagesMapped,
+            memories: memoriesSliced
+        };
         if(reminder) {
+            context.event = "reminder";
+            context.currentTime = new Date().toISOString();
             if (reminder.memoryId instanceof mongoose.Types.ObjectId) {
-                return {
-                    reminder: reminder,
-                    session: this.cache.sessions,
-                    recentMessages: recentMessagesMapped,
-                    memories: memoriesSliced
+                context.reminder = {
+                    memoryId: reminder.memoryId.toString()
+                };
+            } else {
+                context.reminder = {
+                    id: reminder.memoryId._id,
+                    text: reminder.memoryId.text,
+                    metadata: reminder.memoryId.metadata
                 };
             }
-            return {
-                reminder: {
-                    "text": reminder.memoryId.text
-                },
-                session: this.cache.sessions,
-                recentMessages: recentMessagesMapped,
-                memories: memoriesSliced
-            }
+            
+            return context;
         }
 
         if(!this.currentMessage) {
