@@ -109,12 +109,12 @@ export class ContextBuilder {
             `.trim()
             }
 
-            console.log("MemoryAI FollowUp Context:", {
-                currentMessage,
-                recentMessages: recentMessagesMapped,
-                relatedMemories: memoriesSliced,
-                sessions: this.cache.sessions
-            });
+            // console.log("MemoryAI FollowUp Context:", {
+            //     currentMessage,
+            //     recentMessages: recentMessagesMapped,
+            //     relatedMemories: memoriesSliced,
+            //     sessions: this.cache.sessions
+            // });
 
             return {
                 currentMessage,

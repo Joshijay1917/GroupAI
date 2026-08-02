@@ -55,31 +55,31 @@ export class ReminderService {
             }
         }
 
-        const tomorrowStart = new Date();
-        tomorrowStart.setUTCDate(tomorrowStart.getUTCDate() + 1);
-        tomorrowStart.setUTCHours(0, 0, 0, 0);
+        // const tomorrowStart = new Date();
+        // tomorrowStart.setUTCDate(tomorrowStart.getUTCDate() + 1);
+        // tomorrowStart.setUTCHours(0, 0, 0, 0);
 
-        const tomorrowEnd = new Date(tomorrowStart);
-        tomorrowEnd.setUTCDate(tomorrowEnd.getUTCDate() + 1);
+        // const tomorrowEnd = new Date(tomorrowStart);
+        // tomorrowEnd.setUTCDate(tomorrowEnd.getUTCDate() + 1);
 
-        const plannerReminders = await Reminder.exists({
-            status: "pending",
-            origin: "system",
-            remindAt: { $gte: tomorrowStart, $lt: tomorrowEnd }
-        });
-        console.log("Start: ", tomorrowStart, "End: ", tomorrowEnd, " Planner reminders for tomorrow:", plannerReminders)
+        // const plannerReminders = await Reminder.exists({
+        //     status: "pending",
+        //     origin: "system",
+        //     remindAt: { $gte: tomorrowStart, $lt: tomorrowEnd }
+        // });
+        // console.log("Start: ", tomorrowStart, "End: ", tomorrowEnd, " Planner reminders for tomorrow:", plannerReminders)
 
-        if(!plannerReminders) {
-            try {
-                console.log("Creating Daily reminder planner for tomorrow:", tomorrowStart, tomorrowEnd)
-                await this.createTomorrowReminder();
-            } catch (error) {
-                console.error("Create Daily reminder planner:", error);
-            }
-        } else {
-            console.log("Start: ", tomorrowStart, "End: ", tomorrowEnd, " Planner reminders for tomorrow already exist.");
-            return;
-        }
+        // if(!plannerReminders) {
+        //     try {
+        //         console.log("Creating Daily reminder planner for tomorrow:", tomorrowStart, tomorrowEnd)
+        //         await this.createTomorrowReminder();
+        //     } catch (error) {
+        //         console.error("Create Daily reminder planner:", error);
+        //     }
+        // } else {
+        //     console.log("Start: ", tomorrowStart, "End: ", tomorrowEnd, " Planner reminders for tomorrow already exist.");
+        //     return;
+        // }
     }
 
     private async process(reminder: IReminder) {
