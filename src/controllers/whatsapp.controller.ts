@@ -46,7 +46,7 @@ export const webHookController = async (req: Request, res: Response) => {
                     for(const a of memories.actions) {
                         switch(a.action) {
                             case "create":
-                                await agent.saveMemory(message.groupId, a, cacheService)
+                                await agent.saveMemory(message.groupId, "message", a, cacheService)
                                 break;
                             case "update":
                                 await agent.updateMemory(message.groupId, a, cacheService)

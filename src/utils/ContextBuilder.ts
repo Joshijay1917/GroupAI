@@ -87,8 +87,7 @@ export class ContextBuilder {
             const currentMessage = {
                 sender: "system",
                 type: "daily_followup",
-                text: "Plan one useful reminder for tomorrow if appropriate. Ignore if nothing deserves a reminder.",
-                remindAt: followUp.followUpAt
+                text: "Plan one useful reminder for tomorrow if appropriate. Ignore if nothing deserves a reminder."
             }
 
             console.log("MemoryAI FollowUp Context:", {

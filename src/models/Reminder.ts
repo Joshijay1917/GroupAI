@@ -8,6 +8,7 @@ export interface IReminder extends Document {
     memoryId: Types.ObjectId | IMemories,
     remindAt: Date,
     status: "pending" | "sent" | "cancelled",
+    origin: "user" | "system",
     createdAt: Date,
     updatedAt: Date
 }
@@ -28,6 +29,10 @@ const reminderSchema = new mongoose.Schema<IReminder>({
     status: {
         type: String,
         default: "pending"
+    },
+    origin: {
+        type: String,
+        default: "user"
     }
 }, { timestamps: true })
 

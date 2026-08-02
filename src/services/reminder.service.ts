@@ -63,19 +63,20 @@ export class ReminderService {
         const tomorrowEnd = new Date(tomorrowStart);
         tomorrowEnd.setUTCDate(tomorrowEnd.getUTCDate() + 1);
 
-        const plannerReminders = await Reminder.find({
+        const plannerReminders = await Reminder.exists({
             status: "pending",
+            origin: "system",
             remindAt: { $gte: tomorrowStart, $lt: tomorrowEnd }
         });
 
-        if(plannerReminders && plannerReminders.length > 0) {
-            return;
-        } else {
+        if(!plannerReminders) {
             try {
                 await this.createTomorrowReminder();
             } catch (error) {
                 console.error("Create Daily reminder planner:", error);
             }
+        } else {
+            return;
         }
     }
 
@@ -136,7 +137,6 @@ export class ReminderService {
         const groups = await Group.find({}, "_id");
         
         for(const group of groups) {
-            const followUpAt = this.randomTomorrowUTC();
             try {
                 const builder = await ContextBuilder.build(group._id, "reminder", this.cache)
                 const agent = new AgentService(builder);
@@ -145,8 +145,7 @@ export class ReminderService {
                 while(true) {
                     const result = await agent.memoryAI("daily_followup", {
                         sender: "system",
-                        type: "daily_followup",
-                        followUpAt: followUpAt.toISOString()
+                        type: "daily_followup"
                     })
 
                     if (!result?.actions?.length) {
@@ -170,6 +169,7 @@ export class ReminderService {
                         case "create":
                             await agent.saveMemory(
                                 group._id,
+                                "daily_followup",
                                 action,
                                 this.cache
                             );

@@ -57,7 +57,7 @@ class AgentService {
         }
     }
 
-    async saveMemory(groupId: Types.ObjectId, memory: CreateMemory, cacheService: CacheService) {
+    async saveMemory(groupId: Types.ObjectId, type: "message" | "daily_followup", memory: CreateMemory, cacheService: CacheService) {
         console.log("Save memory init:", memory)
         if(memory.action !== "create") {
             return;
@@ -82,7 +82,8 @@ class AgentService {
                         await Reminder.create({
                             groupId: groupId,
                             memoryId: result._id,
-                            remindAt: memory.memory.metadata.remindAt
+                            remindAt: memory.memory.metadata.remindAt,
+                            origin: type === "daily_followup" ? "system" : "user"
                         })
                     } catch (error) {
                         console.error("Reminder creation failed:", error);

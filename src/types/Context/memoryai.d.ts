@@ -22,6 +22,5 @@ type MemoryAIFollowUp = {
 interface FollowUp {
     sender: string,
     type: "daily_followup",
-    text?: string,
-    followUpAt: string
+    text?: string
 }
