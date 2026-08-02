@@ -7,13 +7,14 @@ import AgentService from "./agent.service.js";
 import type { CacheService } from "./cache.service.js";
 import { MessageService } from "./message.service.js";
 
-const CHECK_INTERVAL = 30 * 1000;
+const CHECK_INTERVAL = 10 * 1000;
 
 export class ReminderService {
     private cache: CacheService;
     private messageService: MessageService;
     private timer: NodeJS.Timeout | null = null;
     private running = false;
+    private plannerRunning = false;
 
     constructor(cache: CacheService) {
         this.cache = cache;
@@ -55,31 +56,38 @@ export class ReminderService {
             }
         }
 
-        // const tomorrowStart = new Date();
-        // tomorrowStart.setUTCDate(tomorrowStart.getUTCDate() + 1);
-        // tomorrowStart.setUTCHours(0, 0, 0, 0);
+        const tomorrowStart = new Date();
+        tomorrowStart.setUTCDate(tomorrowStart.getUTCDate() + 1);
+        tomorrowStart.setUTCHours(0, 0, 0, 0);
 
-        // const tomorrowEnd = new Date(tomorrowStart);
-        // tomorrowEnd.setUTCDate(tomorrowEnd.getUTCDate() + 1);
+        const tomorrowEnd = new Date(tomorrowStart);
+        tomorrowEnd.setUTCDate(tomorrowEnd.getUTCDate() + 1);
 
-        // const plannerReminders = await Reminder.exists({
-        //     status: "pending",
-        //     origin: "system",
-        //     remindAt: { $gte: tomorrowStart, $lt: tomorrowEnd }
-        // });
-        // console.log("Start: ", tomorrowStart, "End: ", tomorrowEnd, " Planner reminders for tomorrow:", plannerReminders)
+        const plannerReminders = await Reminder.exists({
+            status: "pending",
+            origin: "system",
+            remindAt: { $gte: tomorrowStart, $lt: tomorrowEnd }
+        });
+        console.log("Start: ", tomorrowStart, "End: ", tomorrowEnd, " Planner reminders for tomorrow:", plannerReminders)
 
-        // if(!plannerReminders) {
-        //     try {
-        //         console.log("Creating Daily reminder planner for tomorrow:", tomorrowStart, tomorrowEnd)
-        //         await this.createTomorrowReminder();
-        //     } catch (error) {
-        //         console.error("Create Daily reminder planner:", error);
-        //     }
-        // } else {
-        //     console.log("Start: ", tomorrowStart, "End: ", tomorrowEnd, " Planner reminders for tomorrow already exist.");
-        //     return;
-        // }
+        if(!plannerReminders) {
+            if (this.plannerRunning) {
+                return;
+            }
+
+            this.plannerRunning = true;
+            try {
+                console.log("Creating Daily reminder planner for tomorrow:", tomorrowStart, tomorrowEnd)
+                await this.createTomorrowReminder();
+            } catch (error) {
+                console.error("Create Daily reminder planner:", error);
+            } finally {
+                this.plannerRunning = false;
+            }
+        } else {
+            console.log("Start: ", tomorrowStart, "End: ", tomorrowEnd, " Planner reminders for tomorrow already exist.");
+            return;
+        }
     }
 
     private async process(reminder: IReminder) {
@@ -126,6 +134,7 @@ export class ReminderService {
                 let hasRead = false;
 
                 while(true) {
+                    console.log("Calling MemoryAI for group:", group._id)
                     const result = await agent.memoryAI("daily_followup", {
                         sender: "system",
                         type: "daily_followup"
@@ -136,7 +145,7 @@ export class ReminderService {
                         for(const a of result.actions) {
                             switch(a.action) {
                                 case "create":
-                                    await agent.saveMemory(group._id, "message", a, this.cache)
+                                    await agent.saveMemory(group._id, "daily_followup", a, this.cache)
                                     break;
                                 case "update":
                                     await agent.updateMemory(group._id, a, this.cache)
