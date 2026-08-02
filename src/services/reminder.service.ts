@@ -29,7 +29,6 @@ export class ReminderService {
         try {
             this.timer = setInterval(() => {
                 void this.tick();
-                void this.dailyReminderPlannerTick();
             }, CHECK_INTERVAL);
         } catch (error) {
             console.error(error)
