@@ -87,7 +87,18 @@ export class ContextBuilder {
             const currentMessage = {
                 sender: "system",
                 type: "daily_followup",
-                text: "Plan one useful reminder for tomorrow if appropriate. Ignore if nothing deserves a reminder."
+                text: `
+            Daily planning task.
+
+            Review recent messages and related memories.
+
+            If there is a meaningful follow-up that should happen TOMORROW, create exactly one reminder.
+
+            Requirements:
+            - The reminder must be for TOMORROW only.
+            - Set metadata.remindAt to a UTC datetime that falls sometime tomorrow.
+            - If no useful follow-up exists, return "ignore".
+            `.trim()
             }
 
             console.log("MemoryAI FollowUp Context:", {
