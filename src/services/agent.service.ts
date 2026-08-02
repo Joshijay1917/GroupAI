@@ -78,6 +78,7 @@ class AgentService {
             if(result) {
                 cacheService.pushMemory(groupId, result)
                 if(memory.memory.type === "reminder" && memory.memory.metadata) {
+                    console.log("Creating reminder for memory:", result)
                     try {
                         await Reminder.create({
                             groupId: groupId,

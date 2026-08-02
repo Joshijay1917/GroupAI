@@ -49,7 +49,8 @@ export class ReminderService {
         if(reminders && reminders.length > 0) {
             for(const reminder of reminders) {
                 try {
-                    await this.process(reminder);
+                    console.log("Processing reminder:", reminder)
+                    // await this.process(reminder);
                 } catch (err) {
                     console.error(err);
                 }
@@ -68,14 +69,17 @@ export class ReminderService {
             origin: "system",
             remindAt: { $gte: tomorrowStart, $lt: tomorrowEnd }
         });
+        console.log("Start: ", tomorrowStart, "End: ", tomorrowEnd, " Planner reminders for tomorrow:", plannerReminders)
 
         if(!plannerReminders) {
             try {
+                console.log("Creating Daily reminder planner for tomorrow:", tomorrowStart, tomorrowEnd)
                 await this.createTomorrowReminder();
             } catch (error) {
                 console.error("Create Daily reminder planner:", error);
             }
         } else {
+            console.log("Start: ", tomorrowStart, "End: ", tomorrowEnd, " Planner reminders for tomorrow already exist.");
             return;
         }
     }
