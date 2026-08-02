@@ -9,6 +9,7 @@ export interface IReminder extends Document {
     remindAt: Date,
     status: "pending" | "sent" | "cancelled",
     origin: "user" | "system",
+    text: string,
     createdAt: Date,
     updatedAt: Date
 }
@@ -33,6 +34,10 @@ const reminderSchema = new mongoose.Schema<IReminder>({
     origin: {
         type: String,
         default: "user"
+    },
+    text: {
+        type: String,
+        default: ""
     }
 }, { timestamps: true })
 

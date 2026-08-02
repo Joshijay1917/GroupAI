@@ -84,7 +84,8 @@ class AgentService {
                             groupId: groupId,
                             memoryId: result._id,
                             remindAt: memory.memory.metadata.remindAt,
-                            origin: type === "daily_followup" ? "system" : "user"
+                            origin: type === "daily_followup" ? "system" : "user",
+                            text: memory.memory.text
                         })
                     } catch (error) {
                         console.error("Reminder creation failed:", error);

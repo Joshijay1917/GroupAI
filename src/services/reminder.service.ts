@@ -1,6 +1,6 @@
 import type { IGroup } from "../models/Group.js";
 import Group from "../models/Group.js";
-import { type IMemories } from "../models/Memories.js";
+import Memories, { type IMemories } from "../models/Memories.js";
 import Reminder, { type IReminder } from "../models/Reminder.js";
 import { ContextBuilder } from "../utils/ContextBuilder.js";
 import AgentService from "./agent.service.js";
@@ -48,7 +48,7 @@ export class ReminderService {
             for(const reminder of reminders) {
                 try {
                     console.log("Processing reminder:", reminder)
-                    // await this.process(reminder);
+                    await this.process(reminder);
                 } catch (err) {
                     console.error(err);
                 }
@@ -100,6 +100,14 @@ export class ReminderService {
 
             reminder.status = "sent";
             await reminder.save();
+
+            if(
+                reminderDoc.memoryId.type === "reminder" &&
+                reminderDoc.memoryId.metadata?.repeat === "daily"
+            ) {
+                await Memories.findByIdAndUpdate(reminderDoc.memoryId._id)
+                this.cache.deleteMemory(reminderDoc.groupId._id, reminderDoc.memoryId._id.toString())
+            }
 
             return message
         } catch (error) {
