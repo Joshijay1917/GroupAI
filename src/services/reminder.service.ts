@@ -7,7 +7,7 @@ import AgentService from "./agent.service.js";
 import type { CacheService } from "./cache.service.js";
 import { MessageService } from "./message.service.js";
 
-const CHECK_INTERVAL = 10 * 1000;
+const CHECK_INTERVAL = 60 * 1000;
 
 export class ReminderService {
     private cache: CacheService;
