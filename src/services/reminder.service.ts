@@ -140,66 +140,66 @@ export class ReminderService {
         console.log("Create Tomorrow Reminder Planner!")
         const groups = await Group.find({}, "_id");
         
-        for(const group of groups) {
-            try {
-                const builder = await ContextBuilder.build(group._id, "reminder", this.cache)
-                const agent = new AgentService(builder);
-                let hasRead = false;
+        // for(const group of groups) {
+        //     try {
+        //         const builder = await ContextBuilder.build(group._id, "reminder", this.cache)
+        //         const agent = new AgentService(builder);
+        //         let hasRead = false;
 
-                while(true) {
-                    const result = await agent.memoryAI("daily_followup", {
-                        sender: "system",
-                        type: "daily_followup"
-                    })
+        //         while(true) {
+        //             const result = await agent.memoryAI("daily_followup", {
+        //                 sender: "system",
+        //                 type: "daily_followup"
+        //             })
 
-                    if (!result?.actions?.length) {
-                        break;
-                    }
+        //             if (!result?.actions?.length) {
+        //                 break;
+        //             }
 
-                    const action = result.actions[0];
+        //             const action = result.actions[0];
 
-                    switch (action.action) {
-                        case "read":
-                            if (hasRead) {
-                                throw new Error("MemoryAI requested read twice.");
-                            }
-                            hasRead = true;
-                            const memories = await AgentService.MemoryRetriever(
-                                group._id,
-                                action.query
-                            );
-                            this.cache.setMemories(group._id, memories);
-                            continue;
-                        case "create":
-                            await agent.saveMemory(
-                                group._id,
-                                "daily_followup",
-                                action,
-                                this.cache
-                            );
-                            break;
-                        case "update":
-                            await agent.updateMemory(
-                                group._id,
-                                action,
-                                this.cache
-                            );
-                            break;
-                        case "delete":
-                            await agent.deleteMemory(
-                                group._id,
-                                action,
-                                this.cache
-                            );
-                            break;
-                        default:
-                            break;
-                    }
-                }
-            } catch (error) {
-                console.error("Daily reminder planner:", group._id, error);
-            }
-        }
+        //             switch (action.action) {
+        //                 case "read":
+        //                     if (hasRead) {
+        //                         throw new Error("MemoryAI requested read twice.");
+        //                     }
+        //                     hasRead = true;
+        //                     const memories = await AgentService.MemoryRetriever(
+        //                         group._id,
+        //                         action.query
+        //                     );
+        //                     this.cache.setMemories(group._id, memories);
+        //                     continue;
+        //                 case "create":
+        //                     await agent.saveMemory(
+        //                         group._id,
+        //                         "daily_followup",
+        //                         action,
+        //                         this.cache
+        //                     );
+        //                     break;
+        //                 case "update":
+        //                     await agent.updateMemory(
+        //                         group._id,
+        //                         action,
+        //                         this.cache
+        //                     );
+        //                     break;
+        //                 case "delete":
+        //                     await agent.deleteMemory(
+        //                         group._id,
+        //                         action,
+        //                         this.cache
+        //                     );
+        //                     break;
+        //                 default:
+        //                     break;
+        //             }
+        //         }
+        //     } catch (error) {
+        //         console.error("Daily reminder planner:", group._id, error);
+        //     }
+        // }
     }
 
     randomTomorrowUTC() {
