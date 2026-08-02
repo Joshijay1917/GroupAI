@@ -84,9 +84,17 @@ export class ContextBuilder {
         const memoriesSliced = this.cache.memories.slice(-MAX_MEMORIES);
 
         if(followUp) {
+            const tomorrowStart = new Date();
+            tomorrowStart.setUTCDate(tomorrowStart.getUTCDate() + 1);
+            tomorrowStart.setUTCHours(0, 0, 0, 0);
+            const tomorrowEnd = new Date(tomorrowStart);
+            tomorrowEnd.setUTCDate(tomorrowEnd.getUTCDate() + 1);
             const currentMessage = {
                 sender: "system",
                 type: "daily_followup",
+                currentTime: new Date().toISOString(),
+                tomorrowStart: tomorrowStart.toISOString(),
+                tomorrowEnd: tomorrowEnd.toISOString(),
                 text: `
             Daily planning task.
 
