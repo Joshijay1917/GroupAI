@@ -131,48 +131,36 @@ export class ReminderService {
                         type: "daily_followup"
                     })
 
-                    if (!result?.actions?.length) {
-                        break;
-                    }
-
-                    const action = result.actions[0];
-
-                    switch (action.action) {
-                        case "read":
-                            if (hasRead) {
-                                throw new Error("MemoryAI requested read twice.");
+                    if(result && result.actions && result.actions.length > 0) {
+                        let shouldContinue = false;
+                        for(const a of result.actions) {
+                            switch(a.action) {
+                                case "create":
+                                    await agent.saveMemory(group._id, "message", a, this.cache)
+                                    break;
+                                case "update":
+                                    await agent.updateMemory(group._id, a, this.cache)
+                                    break;
+                                case "delete":
+                                    await agent.deleteMemory(group._id, a, this.cache)
+                                    break;
+                                case "read":
+                                    if(hasRead) {
+                                        throw new Error("MemoryAI requested read twice.")
+                                    }
+                                    const query = a.query
+                                    const result = await AgentService.MemoryRetriever(group._id, query ? query : "Reminder")
+                                    this.cache.setMemories(group._id, result)
+                                    hasRead = true;
+                                    shouldContinue = true;
+                                    break;
+                                default:
+                                    break;
                             }
-                            hasRead = true;
-                            const memories = await AgentService.MemoryRetriever(
-                                group._id,
-                                action.query
-                            );
-                            this.cache.setMemories(group._id, memories);
-                            continue;
-                        case "create":
-                            await agent.saveMemory(
-                                group._id,
-                                "daily_followup",
-                                action,
-                                this.cache
-                            );
+                        }
+                        if(!shouldContinue) {
                             break;
-                        case "update":
-                            await agent.updateMemory(
-                                group._id,
-                                action,
-                                this.cache
-                            );
-                            break;
-                        case "delete":
-                            await agent.deleteMemory(
-                                group._id,
-                                action,
-                                this.cache
-                            );
-                            break;
-                        default:
-                            break;
+                        }
                     }
                 }
             } catch (error) {

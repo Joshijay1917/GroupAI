@@ -43,6 +43,7 @@ export const webHookController = async (req: Request, res: Response) => {
             while(true) {
                 const memories = await agent.memoryAI("message")
                 if(memories && memories.actions && memories.actions.length > 0) {
+                    let shouldContinue = false;
                     for(const a of memories.actions) {
                         switch(a.action) {
                             case "create":
@@ -62,18 +63,20 @@ export const webHookController = async (req: Request, res: Response) => {
                                 const result = await AgentService.MemoryRetriever(message.groupId, query ? query : message.text)
                                 cacheService.setMemories(message.groupId, result)
                                 hasRead = true;
+                                shouldContinue = true;
                                 break;
                             default:
                                 break;
                         }
+                    }
+                    if(!shouldContinue) {
+                        break;
                     }
                 }
             }
         } catch (error) {
             console.error("Background memory task failed:", error);
         }
-
-        start:
 
         await sessionService.manage(message, agent, cacheService)
 
