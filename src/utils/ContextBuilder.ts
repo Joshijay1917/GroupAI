@@ -2,7 +2,7 @@ import type { Types } from "mongoose"
 import type { IMessage } from "../models/Message.js"
 import type { ISession } from "../models/Session.js"
 import type { IMemories } from "../models/Memories.js"
-import type { MemoryAI } from "../types/Context/memoryai.js"
+import type { FollowUp, MemoryAI, MemoryAIFollowUp } from "../types/Context/memoryai.js"
 import type { DescisionAI } from "../types/Context/decisionai.js"
 import type { ReplayAI, ReplayAIRemider } from "../types/Context/replayai.js"
 import { CacheService, type GroupCache, type MemoryCache, type SessionCache } from "../services/cache.service.js"
@@ -73,14 +73,46 @@ export class ContextBuilder {
         }
     }
 
-    generateMemoryAI(): MemoryAI {
+    generateMemoryAI(): MemoryAI;
+    generateMemoryAI(followUP: FollowUp): MemoryAIFollowUp;
+
+    generateMemoryAI(followUp?: FollowUp): any {
+        if(!this.cache.sessions) {
+            throw new Error("MemoryAIContext: Current Message not found!")
+        }
+        const recentMessagesMapped = this.cache.recentMessages.slice(-MAX_RECENT_MESSAGES).map(m => ({ senderId: m.sender.name, text: m.text }));
+        const memoriesSliced = this.cache.memories.slice(-MAX_MEMORIES);
+
+        if(followUp) {
+            const currentMessage = {
+                sender: "system",
+                type: "daily_followup",
+                text: "Plan one useful reminder for tomorrow if appropriate. Ignore if nothing deserves a reminder.",
+                remindAt: followUp.followUpAt
+            }
+
+            console.log("MemoryAI FollowUp Context:", {
+                currentMessage,
+                recentMessages: recentMessagesMapped,
+                relatedMemories: memoriesSliced,
+                sessions: this.cache.sessions
+            });
+
+            return {
+                currentMessage,
+                recentMessages: recentMessagesMapped,
+                relatedMemories: memoriesSliced,
+                sessions: this.cache.sessions
+            };
+        }
         if(!this.currentMessage) {
             throw new Error("MemoryAIContext: Current Message not found!")
         }
         console.log("MemoreyAI Context Generation:", {
             currentMessage: this.currentMessage,
             recentMessages: this.cache.recentMessages.slice(-MAX_RECENT_MESSAGES).map(m => ({ senderId: m.sender.name, text: m.text })),
-            relatedMemories: this.cache.memories.slice(-MAX_MEMORIES)
+            relatedMemories: this.cache.memories.slice(-MAX_MEMORIES),
+            sessions: this.cache.sessions
         })
         return {
             currentMessage: this.currentMessage,

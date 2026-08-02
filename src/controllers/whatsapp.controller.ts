@@ -41,7 +41,7 @@ export const webHookController = async (req: Request, res: Response) => {
 
         try {
             while(true) {
-                const memories = await agent.memoryAI()
+                const memories = await agent.memoryAI("message")
                 if(memories && memories.actions && memories.actions.length > 0) {
                     for(const a of memories.actions) {
                         switch(a.action) {

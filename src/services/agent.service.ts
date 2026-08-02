@@ -13,6 +13,7 @@ import type { ISession } from "../models/Session.js";
 import { SUMMARY_AI_SYS_PROP } from "../utils/SummaryAISYSPrompt.js";
 import type { CacheService } from "./cache.service.js";
 import Reminder, { type IReminder } from "../models/Reminder.js";
+import type { FollowUp } from "../types/Context/memoryai.js";
 
 const ai = new GoogleGenAI({});
 
@@ -23,11 +24,16 @@ class AgentService {
         this.builder = builder
     }
 
-    async memoryAI() {
+    async memoryAI(type: "message" | "daily_followup", followUp?: FollowUp) {
         console.log("Memory AI Started!")
         try {
             // const recentMessages = await Message.find({ groupId: message.groupId }).sort({ createdAt: -1 }).limit(20).lean()
-            const context = this.builder.generateMemoryAI();
+            let context = null;
+            if(type === "daily_followup" && followUp) {
+                context = this.builder.generateMemoryAI(followUp)
+            } else {
+                context = this.builder.generateMemoryAI()
+            }
             const response = await ai.models.generateContent({
                 model: "gemma-4-31b-it",
                 contents: JSON.stringify(context),
