@@ -137,6 +137,7 @@ export class ReminderService {
                     console.log("Calling MemoryAI for group:", group._id)
                     const result = await agent.memoryAI("daily_followup", {
                         sender: "system",
+                        groupId: group._id.toString(),
                         type: "daily_followup"
                     })
 

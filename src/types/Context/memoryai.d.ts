@@ -1,4 +1,5 @@
 import type { IMemories } from "../../models/Memories.ts"
+import type { IReminder } from "../../models/Reminder.ts"
 import type { MemoryCache, SessionCache } from "../../services/cache.service.ts"
 
 type MemoryAI = {
@@ -16,11 +17,13 @@ type MemoryAIFollowUp = {
     currentMessage: FollowUp,
     recentMessages: {senderId: string, text: string}[],
     relatedMemories: MemoryCache[],
-    sessions: SessionCache[]
+    sessions: SessionCache[],
+    pendingReminders: IReminder[]
 }
 
 interface FollowUp {
     sender: string,
+    groupId: string,
     type: "daily_followup",
     text?: string
 }

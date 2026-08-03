@@ -13,6 +13,7 @@ import type { SummaryAI } from "../types/Context/summaryai.js"
 import type { IUser } from "../models/User.js"
 import type { IReminder } from "../models/Reminder.js"
 import mongoose from "mongoose"
+import Reminder from "../models/Reminder.js"
 
 const MAX_RECENT_MESSAGES = 15;
 const MAX_MEMORIES = 10;
@@ -73,10 +74,10 @@ export class ContextBuilder {
         }
     }
 
-    generateMemoryAI(): MemoryAI;
-    generateMemoryAI(followUP: FollowUp): MemoryAIFollowUp;
+    async generateMemoryAI(): Promise<MemoryAI>;
+    async generateMemoryAI(followUP: FollowUp): Promise<MemoryAIFollowUp>;
 
-    generateMemoryAI(followUp?: FollowUp): any {
+    async generateMemoryAI(followUp?: FollowUp): Promise<any> {
         if(!this.cache.sessions) {
             throw new Error("MemoryAIContext: Current Message not found!")
         }
@@ -116,11 +117,19 @@ export class ContextBuilder {
             //     sessions: this.cache.sessions
             // });
 
+            const existingReminders = await Reminder.find({
+                groupId: followUp.groupId
+            }).populate<{ memoryId: IMemories }>("memoryId").lean();
+
             return {
                 currentMessage,
                 recentMessages: recentMessagesMapped,
                 relatedMemories: memoriesSliced,
-                sessions: this.cache.sessions
+                sessions: this.cache.sessions,
+                existingReminders : existingReminders.map(reminder => ({
+                    text: reminder.memoryId.text,
+                    remindAt: reminder.remindAt
+                }))
             };
         }
         if(!this.currentMessage) {
