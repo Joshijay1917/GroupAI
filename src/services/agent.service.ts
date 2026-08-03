@@ -30,10 +30,11 @@ class AgentService {
             // const recentMessages = await Message.find({ groupId: message.groupId }).sort({ createdAt: -1 }).limit(20).lean()
             let context = null;
             if(type === "daily_followup" && followUp) {
-                context = this.builder.generateMemoryAI(followUp)
+                context = await this.builder.generateMemoryAI(followUp)
             } else {
                 context = this.builder.generateMemoryAI()
             }
+            console.log("MemoryAI Context:", context)
             const response = await ai.models.generateContent({
                 model: "gemma-4-31b-it",
                 contents: JSON.stringify(context),

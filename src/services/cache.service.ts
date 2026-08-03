@@ -55,7 +55,6 @@ export class CacheService {
     }
 
     init(currentGroupId: Types.ObjectId, recentMessages: IMessage[], sessions: ISession[], memories: IMemories[]) {
-        console.log("Cache Service Init!")
         const groupId = currentGroupId.toString()
         let cacheGroup = this.cache.get(groupId)
         if(!cacheGroup) {
@@ -82,8 +81,6 @@ export class CacheService {
             metadata: m.metadata,
             confidence: m.confidence
         }));
-
-        console.log("Initialized Cache Service!:", cacheGroup)
         
         return cacheGroup;
     }
