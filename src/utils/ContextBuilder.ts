@@ -119,7 +119,7 @@ export class ContextBuilder {
 
             const existingReminders = await Reminder.find({
                 groupId: followUp.groupId
-            }).populate<{ memoryId: IMemories }>("memoryId").lean();
+            })
 
             return {
                 currentMessage,
@@ -127,7 +127,7 @@ export class ContextBuilder {
                 relatedMemories: memoriesSliced,
                 sessions: this.cache.sessions,
                 existingReminders : existingReminders.map(reminder => ({
-                    text: reminder.memoryId.text,
+                    text: reminder.text,
                     remindAt: reminder.remindAt
                 }))
             };
