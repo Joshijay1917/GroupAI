@@ -209,6 +209,7 @@ class AgentService {
                         type: 1,
                         metadata: 1,
                         confidence: 1,
+                        updatedAt: 1,
                         score: { $meta: "vectorSearchScore" }
                     }
                 }
