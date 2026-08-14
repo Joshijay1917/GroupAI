@@ -8,6 +8,7 @@ import type { CacheService } from "./cache.service.js";
 import { MessageService } from "./message.service.js";
 
 const CHECK_INTERVAL = 60 * 1000;
+let MAX_REMINDER_PROCESS_CAN_BE = 2;
 
 export class ReminderService {
     private cache: CacheService;
@@ -70,7 +71,7 @@ export class ReminderService {
         });
         console.log("Start: ", tomorrowStart, "End: ", tomorrowEnd, " Planner reminders for tomorrow:", plannerReminders)
 
-        if(!plannerReminders) {
+        if(!plannerReminders && MAX_REMINDER_PROCESS_CAN_BE !== 0) {
             if (this.plannerRunning) {
                 return;
             }
@@ -83,6 +84,7 @@ export class ReminderService {
                 console.error("Create Daily reminder planner:", error);
             } finally {
                 this.plannerRunning = false;
+                MAX_REMINDER_PROCESS_CAN_BE--;
             }
         } else {
             console.log("Start: ", tomorrowStart, "End: ", tomorrowEnd, " Planner reminders for tomorrow already exist.");
