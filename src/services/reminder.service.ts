@@ -148,6 +148,7 @@ export class ReminderService {
                         for(const a of result.actions) {
                             switch(a.action) {
                                 case "create":
+                                    a.memory.metadata.repeat = "daily"
                                     await agent.saveMemory(group._id, "daily_followup", a, this.cache)
                                     break;
                                 case "update":
